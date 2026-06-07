@@ -1,0 +1,4007 @@
+
+<!doctype html>
+<html lang="zh" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="大模型数据工程：架构、算法及项目实战">
+      
+      
+        <meta name="author" content="ustc">
+      
+      
+        <link rel="canonical" href="https://datascale-ai.github.io/data_engineering_book/part12/ch40_multi_chart_infographic_reasoning_dataset/">
+      
+      
+        <link rel="prev" href="../ch39_sparse_table_bench_dataset/">
+      
+      
+        <link rel="next" href="../ch41_medimage_tool_vqa_dataset/">
+      
+      
+      <link rel="icon" href="../../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.5.39">
+    
+    
+      
+        <title>第40章：多图表信息图推理数据工程 - 大模型数据工程：架构、算法及项目实战</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../assets/stylesheets/main.8c3ca2c6.min.css">
+      
+        
+        <link rel="stylesheet" href="../../assets/stylesheets/palette.06af60db.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+      <link rel="stylesheet" href="../../stylesheets/extra.css">
+    
+    <script>__md_scope=new URL("../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+    
+   <link href="../../assets/stylesheets/glightbox.min.css" rel="stylesheet"/><style>
+    html.glightbox-open { overflow: initial; height: 100%; }
+    .gslide-title { margin-top: 0px; user-select: text; }
+    .gslide-desc { color: #666; user-select: text; }
+    .gslide-image img { background: white; }
+    .gscrollbar-fixer { padding-right: 15px; }
+    .gdesc-inner { font-size: 0.75rem; }
+    body[data-md-color-scheme="slate"] .gdesc-inner { background: var(--md-default-bg-color);}
+    body[data-md-color-scheme="slate"] .gslide-title { color: var(--md-default-fg-color);}
+    body[data-md-color-scheme="slate"] .gslide-desc { color: var(--md-default-fg-color);}</style> <script src="../../assets/javascripts/glightbox.min.js"></script></head>
+  
+  
+    
+    
+      
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="white" data-md-color-accent="red">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#40" class="md-skip">
+          跳转至
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+  
+
+<header class="md-header md-header--shadow" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="页眉">
+    <a href="../.." title="大模型数据工程：架构、算法及项目实战" class="md-header__button md-logo" aria-label="大模型数据工程：架构、算法及项目实战" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            大模型数据工程：架构、算法及项目实战
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              第40章：多图表信息图推理数据工程
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+        <form class="md-header__option" data-md-component="palette">
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: light)" data-md-color-scheme="default" data-md-color-primary="white" data-md-color-accent="red"  aria-label="切换至夜间模式"  type="radio" name="__palette" id="__palette_0">
+    
+      <label class="md-header__button md-icon" title="切换至夜间模式" for="__palette_1" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 7a5 5 0 0 1 5 5 5 5 0 0 1-5 5 5 5 0 0 1-5-5 5 5 0 0 1 5-5m0 2a3 3 0 0 0-3 3 3 3 0 0 0 3 3 3 3 0 0 0 3-3 3 3 0 0 0-3-3m0-7 2.39 3.42C13.65 5.15 12.84 5 12 5s-1.65.15-2.39.42zM3.34 7l4.16-.35A7.2 7.2 0 0 0 5.94 8.5c-.44.74-.69 1.5-.83 2.29zm.02 10 1.76-3.77a7.131 7.131 0 0 0 2.38 4.14zM20.65 7l-1.77 3.79a7.02 7.02 0 0 0-2.38-4.15zm-.01 10-4.14.36c.59-.51 1.12-1.14 1.54-1.86.42-.73.69-1.5.83-2.29zM12 22l-2.41-3.44c.74.27 1.55.44 2.41.44.82 0 1.63-.17 2.37-.44z"/></svg>
+      </label>
+    
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: dark)" data-md-color-scheme="slate" data-md-color-primary="black" data-md-color-accent="red"  aria-label="切换至日间模式"  type="radio" name="__palette" id="__palette_1">
+    
+      <label class="md-header__button md-icon" title="切换至日间模式" for="__palette_0" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="m17.75 4.09-2.53 1.94.91 3.06-2.63-1.81-2.63 1.81.91-3.06-2.53-1.94L12.44 4l1.06-3 1.06 3zm3.5 6.91-1.64 1.25.59 1.98-1.7-1.17-1.7 1.17.59-1.98L15.75 11l2.06-.05L18.5 9l.69 1.95zm-2.28 4.95c.83-.08 1.72 1.1 1.19 1.85-.32.45-.66.87-1.08 1.27C15.17 23 8.84 23 4.94 19.07c-3.91-3.9-3.91-10.24 0-14.14.4-.4.82-.76 1.27-1.08.75-.53 1.93.36 1.85 1.19-.27 2.86.69 5.83 2.89 8.02a9.96 9.96 0 0 0 8.02 2.89m-1.64 2.02a12.08 12.08 0 0 1-7.8-3.47c-2.17-2.19-3.33-5-3.49-7.82-2.81 3.14-2.7 7.96.31 10.98 3.02 3.01 7.84 3.12 10.98.31"/></svg>
+      </label>
+    
+  
+</form>
+      
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+      <div class="md-header__option">
+  <div class="md-select">
+    
+    <button class="md-header__button md-icon" aria-label="选择当前语言">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="m12.87 15.07-2.54-2.51.03-.03A17.5 17.5 0 0 0 14.07 6H17V4h-7V2H8v2H1v2h11.17C11.5 7.92 10.44 9.75 9 11.35 8.07 10.32 7.3 9.19 6.69 8h-2c.73 1.63 1.73 3.17 2.98 4.56l-5.09 5.02L4 19l5-5 3.11 3.11zM18.5 10h-2L12 22h2l1.12-3h4.75L21 22h2zm-2.62 7 1.62-4.33L19.12 17z"/></svg>
+    </button>
+    <div class="md-select__inner">
+      <ul class="md-select__list">
+        
+          <li class="md-select__item">
+            <a href="./" hreflang="zh" class="md-select__link">
+              简体中文
+            </a>
+          </li>
+        
+          <li class="md-select__item">
+            <a href="../../en/part12/ch40_multi_chart_infographic_reasoning_dataset/" hreflang="en" class="md-select__link">
+              English
+            </a>
+          </li>
+        
+          <li class="md-select__item">
+            <a href="../../ja/part12/ch40_multi_chart_infographic_reasoning_dataset/" hreflang="ja" class="md-select__link">
+              日本語
+            </a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</div>
+    
+    
+      <label class="md-header__button md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+      </label>
+      <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="搜索" placeholder="搜索" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="查找">
+        
+        <button type="reset" class="md-search__icon md-icon" title="清空当前内容" aria-label="清空当前内容" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+        <div class="md-search__suggest" data-md-component="search-suggest"></div>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            正在初始化搜索引擎
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/datascale-ai/data_engineering_book/tree/main" title="前往仓库" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 6.6.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2024 Fonticons, Inc.--><path d="M439.55 236.05 244 40.45a28.87 28.87 0 0 0-40.81 0l-40.66 40.63 51.52 51.52c27.06-9.14 52.68 16.77 43.39 43.68l49.66 49.66c34.23-11.8 61.18 31 35.47 56.69-26.49 26.49-70.21-2.87-56-37.34L240.22 199v121.85c25.3 12.54 22.26 41.85 9.08 55a34.34 34.34 0 0 1-48.55 0c-17.57-17.6-11.07-46.91 11.25-56v-123c-20.8-8.51-24.6-30.74-18.64-45L142.57 101 8.45 235.14a28.86 28.86 0 0 0 0 40.81l195.61 195.6a28.86 28.86 0 0 0 40.8 0l194.69-194.69a28.86 28.86 0 0 0 0-40.81"/></svg>
+  </div>
+  <div class="md-source__repository">
+    GitHub
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+
+<nav class="md-nav md-nav--primary" aria-label="导航栏" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../.." title="大模型数据工程：架构、算法及项目实战" class="md-nav__button md-logo" aria-label="大模型数据工程：架构、算法及项目实战" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    大模型数据工程：架构、算法及项目实战
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/datascale-ai/data_engineering_book/tree/main" title="前往仓库" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 6.6.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2024 Fonticons, Inc.--><path d="M439.55 236.05 244 40.45a28.87 28.87 0 0 0-40.81 0l-40.66 40.63 51.52 51.52c27.06-9.14 52.68 16.77 43.39 43.68l49.66 49.66c34.23-11.8 61.18 31 35.47 56.69-26.49 26.49-70.21-2.87-56-37.34L240.22 199v121.85c25.3 12.54 22.26 41.85 9.08 55a34.34 34.34 0 0 1-48.55 0c-17.57-17.6-11.07-46.91 11.25-56v-123c-20.8-8.51-24.6-30.74-18.64-45L142.57 101 8.45 235.14a28.86 28.86 0 0 0 0 40.81l195.61 195.6a28.86 28.86 0 0 0 40.8 0l194.69-194.69a28.86 28.86 0 0 0 0-40.81"/></svg>
+  </div>
+  <div class="md-source__repository">
+    GitHub
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../abbreviations/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    缩写表
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../.." class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    全书总目录
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../preface/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    序言
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../front_matter_guide/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    卷前导读：全书结构、阅读路径与版本说明
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_5" >
+        
+          
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../../part1/" class="md-nav__link ">
+              
+  
+  <span class="md-ellipsis">
+    第一篇：总论与基础设施
+  </span>
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_5" id="__nav_5_label" tabindex="">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_5">
+            <span class="md-nav__icon md-icon"></span>
+            第一篇：总论与基础设施
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part1/ch01_data_change/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    第1章：大模型时代的数据变革
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part1/ch02_quality_framework/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    第2章：LLM数据生命周期与质量评估框架
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part1/ch03_data_stack/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    第3章：AI原生数据栈与成本治理
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_6" >
+        
+          
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../../part2/" class="md-nav__link ">
+              
+  
+  <span class="md-ellipsis">
+    第二篇：文本预训练数据工程
+  </span>
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_6" id="__nav_6_label" tabindex="">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_6_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_6">
+            <span class="md-nav__icon md-icon"></span>
+            第二篇：文本预训练数据工程
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part2/ch04_data_sources/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    第4章：数据源、采集与版权
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part2/ch05_cleaning_dedup/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    第5章：清洗、去重与去污染
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part2/ch06_tokenization_loading/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    第6章：分词、序列化与高效加载
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part2/ch07_data_operations/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    第7章：数据评估、质量闭环与运营迭代
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_7" >
+        
+          
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../../part3/" class="md-nav__link ">
+              
+  
+  <span class="md-ellipsis">
+    第三篇：多模态数据工程
+  </span>
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_7" id="__nav_7_label" tabindex="">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_7_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_7">
+            <span class="md-nav__icon md-icon"></span>
+            第三篇：多模态数据工程
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part3/ch08_multimodal_image/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    第8章：图文对数据工程
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part3/ch09_recaptioning_ocr/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    第9章：重标注与文档理解
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part3/ch10_video_audio/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    第10章：视频与音频数据工程
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part3/ch11_cross_modal_alignment/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    第11章：跨模态对齐与融合
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_8" >
+        
+          
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../../part4/" class="md-nav__link ">
+              
+  
+  <span class="md-ellipsis">
+    第四篇：指令微调与偏好数据
+  </span>
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_8" id="__nav_8_label" tabindex="">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_8_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_8">
+            <span class="md-nav__icon md-icon"></span>
+            第四篇：指令微调与偏好数据
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part4/ch12_sft/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    第12章：SFT数据设计与指令体系
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part4/ch13_preference/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    第13章：偏好数据与奖励信号
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part4/ch14_qa/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    第14章：标注平台、QA体系与数据运营
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_9" >
+        
+          
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../../part5/" class="md-nav__link ">
+              
+  
+  <span class="md-ellipsis">
+    第五篇：合成数据工程
+  </span>
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_9" id="__nav_9_label" tabindex="">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_9_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_9">
+            <span class="md-nav__icon md-icon"></span>
+            第五篇：合成数据工程
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part5/ch15_data_synthesis/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    第15章：合成数据工厂：从种子到验证
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part5/ch16_distillation/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    第16章：知识蒸馏与模型协作
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part5/ch17_quality/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    第17章：合成数据质量控制与模型坍缩
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_10" >
+        
+          
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../../part6/" class="md-nav__link ">
+              
+  
+  <span class="md-ellipsis">
+    第六篇：推理与 Agent 数据工程
+  </span>
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_10" id="__nav_10_label" tabindex="">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_10_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_10">
+            <span class="md-nav__icon md-icon"></span>
+            第六篇：推理与 Agent 数据工程
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part6/ch18_cot/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    第18章：思维链与推理数据工程
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part6/ch19_tool/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    第19章：Tool-Use 与函数调用数据
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part6/ch20_agent/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    第20章：Agent 记忆与多轮交互数据
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_11" >
+        
+          
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../../part7/" class="md-nav__link ">
+              
+  
+  <span class="md-ellipsis">
+    第七篇：应用级数据工程
+  </span>
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_11" id="__nav_11_label" tabindex="">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_11_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_11">
+            <span class="md-nav__icon md-icon"></span>
+            第七篇：应用级数据工程
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part7/ch21_rag_pipeline/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    第21章：RAG 数据流水线
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part7/ch22_multimodal_rag_visual_retrieval/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    第22章：多模态 RAG 与视觉检索
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part7/ch23_online_feedback_knowledge_update/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    第23章：在线反馈闭环与知识更新
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_12" >
+        
+          
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../../part8/" class="md-nav__link ">
+              
+  
+  <span class="md-ellipsis">
+    第八篇：数据运营与平台建设
+  </span>
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_12" id="__nav_12_label" tabindex="">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_12_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_12">
+            <span class="md-nav__icon md-icon"></span>
+            第八篇：数据运营与平台建设
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part8/ch24_dataops_flywheel_team/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    第24章：DataOps 飞轮与团队组织
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part8/ch25_data_versioning_experiment_tracking/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    第25章：数据版本管理与实验追踪
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part8/ch26_data_platform_observability/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    第26章：数据平台可观测性
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_13" >
+        
+          
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../../part9/" class="md-nav__link ">
+              
+  
+  <span class="md-ellipsis">
+    第九篇：数据资产、数据产品与数据契约
+  </span>
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_13" id="__nav_13_label" tabindex="">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_13_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_13">
+            <span class="md-nav__icon md-icon"></span>
+            第九篇：数据资产、数据产品与数据契约
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part9/ch27_data_catalog_and_metadata_governance/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    第27章：数据资产目录与元数据治理
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part9/ch28_data_productization_and_data_contracts/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    第28章：数据产品化与数据契约
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part9/ch29_data_valuation_and_reuse/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    第29章：数据资产价值评估与复用机制
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part9/ch30_internal_data_market_and_sharing_governance/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    第30章：企业内部数据市场与共享治理
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_14" >
+        
+          
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../../part10/" class="md-nav__link ">
+              
+  
+  <span class="md-ellipsis">
+    第十篇：智能化数据工程与 Data Engineering Agent
+  </span>
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_14" id="__nav_14_label" tabindex="">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_14_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_14">
+            <span class="md-nav__icon md-icon"></span>
+            第十篇：智能化数据工程与 Data Engineering Agent
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part10/ch31_agent_architecture/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    第31章：数据工程 Agent 的架构与任务边界
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part10/ch32_auto_collection_parsing_cleaning/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    第32章：自动化采集、解析与清洗 Agent
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part10/ch33_labeling_synthesis_evaluation/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    第33章：标注、合成与评测 Agent
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part10/ch34_dataops_agent/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    第34章：DataOps Agent 与平台自治
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part10/ch35_security_permission_collaboration/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    第35章：数据工程 Agent 的安全、权限与人机协同
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_15" >
+        
+          
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../../part11/" class="md-nav__link ">
+              
+  
+  <span class="md-ellipsis">
+    第十一篇：隐私合规与数据安全
+  </span>
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_15" id="__nav_15_label" tabindex="">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_15_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_15">
+            <span class="md-nav__icon md-icon"></span>
+            第十一篇：隐私合规与数据安全
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part11/ch36_compliance_framework_and_governance/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    第36章：数据合规框架与治理
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part11/ch37_federated_learning_and_privacy_preserving_technologies/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    第37章：联邦学习与隐私保护技术
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+    
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_16" checked>
+        
+          
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../" class="md-nav__link ">
+              
+  
+  <span class="md-ellipsis">
+    第十二篇：专项数据集与数据工程实践
+  </span>
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_16" id="__nav_16_label" tabindex="">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_16_label" aria-expanded="true">
+          <label class="md-nav__title" for="__nav_16">
+            <span class="md-nav__icon md-icon"></span>
+            第十二篇：专项数据集与数据工程实践
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../ch38_structbill_cn_dataset/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    第38章：StructBill-CN 票据文档理解数据工程
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../ch39_sparse_table_bench_dataset/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    第39章：SparseTable-Bench 表格结构鲁棒性数据工程
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  <span class="md-ellipsis">
+    第40章：多图表信息图推理数据工程
+  </span>
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        
+  
+  <span class="md-ellipsis">
+    第40章：多图表信息图推理数据工程
+  </span>
+  
+
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="目录">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      目录
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      摘要
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#_2" class="md-nav__link">
+    <span class="md-ellipsis">
+      关键词
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#401-vqa" class="md-nav__link">
+    <span class="md-ellipsis">
+      40.1 问题场景：单图表 VQA 的局限性与复合信息图推理的现实需求
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="40.1 问题场景：单图表 VQA 的局限性与复合信息图推理的现实需求">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#4011" class="md-nav__link">
+    <span class="md-ellipsis">
+      40.1.1 传统单图表视觉问答任务边界约束
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#4012" class="md-nav__link">
+    <span class="md-ellipsis">
+      40.1.2 真实复合信息图的推理特征定义
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#4013" class="md-nav__link">
+    <span class="md-ellipsis">
+      40.1.3 现有基准数据集缺口与本数据集研发意义
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#402" class="md-nav__link">
+    <span class="md-ellipsis">
+      40.2 数据集概览：样本规模、领域覆盖与图表类型体系
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="40.2 数据集概览：样本规模、领域覆盖与图表类型体系">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#4021" class="md-nav__link">
+    <span class="md-ellipsis">
+      40.2.1 数据集基础量化指标
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#4022-28" class="md-nav__link">
+    <span class="md-ellipsis">
+      40.2.2 全维度领域覆盖设计（28 大细分领域）
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#4023" class="md-nav__link">
+    <span class="md-ellipsis">
+      40.2.3 子图表全类型清单与布局特征
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#4023_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      40.2.3 子问题全题型清单与组合特征
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#4025" class="md-nav__link">
+    <span class="md-ellipsis">
+      40.2.5 三大核心任务标准化定义
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#403-" class="md-nav__link">
+    <span class="md-ellipsis">
+      40.3 样本结构：以鲨鱼袭击案例具象拆解信息图 - 子图 - 问题链 - 推理链路
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="40.3 样本结构：以鲨鱼袭击案例具象拆解信息图 - 子图 - 问题链 - 推理链路">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#4031" class="md-nav__link">
+    <span class="md-ellipsis">
+      40.3.1 单张复合信息图的物理分层结构
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#4032" class="md-nav__link">
+    <span class="md-ellipsis">
+      40.3.2 链式子问题全链路拆解
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#4033" class="md-nav__link">
+    <span class="md-ellipsis">
+      40.3.3 跨图表证据定位规则与推理路径复盘
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="40.3.3 跨图表证据定位规则与推理路径复盘">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#40331" class="md-nav__link">
+    <span class="md-ellipsis">
+      40.3.3.1 跨图表证据定位
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#40332" class="md-nav__link">
+    <span class="md-ellipsis">
+      40.3.3.2 完整链式推理路径复盘
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#4034" class="md-nav__link">
+    <span class="md-ellipsis">
+      40.3.4 不可作答题目设计目的
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#404" class="md-nav__link">
+    <span class="md-ellipsis">
+      40.4 数据集全流程构建流水线
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="40.4 数据集全流程构建流水线">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#4041" class="md-nav__link">
+    <span class="md-ellipsis">
+      40.4.1 第一步：真实复合信息图素材收集与初筛
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#4042" class="md-nav__link">
+    <span class="md-ellipsis">
+      40.4.2 第二步：子图边界识别与分区标注
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#4043" class="md-nav__link">
+    <span class="md-ellipsis">
+      40.4.3 第三步：多阶链式子问题分层设计
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#4044" class="md-nav__link">
+    <span class="md-ellipsis">
+      40.4.4 第四步：答案交叉核验与标准化标注
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#405" class="md-nav__link">
+    <span class="md-ellipsis">
+      40.5 数据集评测协议：多维度量化评测指标
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="40.5 数据集评测协议：多维度量化评测指标">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#4051" class="md-nav__link">
+    <span class="md-ellipsis">
+      40.5.1 单步子问题独立正确率
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#4052" class="md-nav__link">
+    <span class="md-ellipsis">
+      40.5.2 全链路链式正确率
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#4053" class="md-nav__link">
+    <span class="md-ellipsis">
+      40.5.3 跨图表证据定位准确率
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#406" class="md-nav__link">
+    <span class="md-ellipsis">
+      40.6 评测难点与模型典型失败模式
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="40.6 评测难点与模型典型失败模式">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#4061" class="md-nav__link">
+    <span class="md-ellipsis">
+      40.6.1 核心评测技术难点
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#4062" class="md-nav__link">
+    <span class="md-ellipsis">
+      40.6.2 模型典型失败模式
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#407" class="md-nav__link">
+    <span class="md-ellipsis">
+      40.7 数据集现存约束与后续迭代规划
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="40.7 数据集现存约束与后续迭代规划">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#4071" class="md-nav__link">
+    <span class="md-ellipsis">
+      40.7.1 当前硬性局限
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#4072" class="md-nav__link">
+    <span class="md-ellipsis">
+      40.7.2 未来迭代方向
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#_3" class="md-nav__link">
+    <span class="md-ellipsis">
+      本章小结
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#_4" class="md-nav__link">
+    <span class="md-ellipsis">
+      参考文献
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../ch41_medimage_tool_vqa_dataset/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    第41章：MedImage-ToolVQA 医学图像工具调用数据工程
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../ch42_voice_style_control_dataset/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    第42章：VoiceStyleControl 可控语音交互数据工程
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../ch43_latent_switch_69k/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    第43章：Latent-Switch-69K 隐式/显式推理数据工程
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_17" >
+        
+          
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../../part13/" class="md-nav__link ">
+              
+  
+  <span class="md-ellipsis">
+    第十三篇：开源大模型数据工程配方与范式
+  </span>
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_17" id="__nav_17_label" tabindex="">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_17_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_17">
+            <span class="md-nav__icon md-icon"></span>
+            第十三篇：开源大模型数据工程配方与范式
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part13/ch44_pretrain_recipes/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    第44章：LLM 预训练数据工程实战：从配方到落地
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part13/ch45_posttrain_recipes/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    第45章：LLM 后训练数据工程实战：SFT 与偏好对齐
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part13/ch46_rl_reasoning_data/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    第46章：推理模型与 RL 数据工程：R1 / QwQ 范式
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part13/ch47_vlm_data_recipes/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    第47章：多模态大模型（VLM）数据配方：从预训练到视觉对齐
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part13/ch48_t2i_t2v/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    第48章：多模态生成模型数据工程：T2I 与 T2V 数据流水线
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_18" >
+        
+          
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../../part14/" class="md-nav__link ">
+              
+  
+  <span class="md-ellipsis">
+    第十四篇：项目实战
+  </span>
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_18" id="__nav_18_label" tabindex="">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_18_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_18">
+            <span class="md-nav__icon md-icon"></span>
+            第十四篇：项目实战
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part14/p01_mini_c4/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    项目一：基于 Ray 构建分布式 Mini-C4 数据流水线
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part14/p02_legal_sft/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    项目二：垂直领域专家 SFT（法律）
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part14/p03_llava_instruct/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    项目三：LLaVA 多模态指令数据工厂
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part14/p04_synthetic_textbook/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    项目四：合成数学与代码教材工厂
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part14/p05_mm_rag/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    项目五：多模态 RAG 企业财报助手
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part14/p06_prm/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    项目六：CoT 推理数据集构建与 PRM 训练
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part14/p07_agent_tooluse/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    项目七：Agent Tool-Use 数据工厂
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part14/p08_dataops/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    项目八：企业级 DataOps 平台搭建：从数据项目到组织级治理能力
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part14/p09_privacy_pipeline/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    项目九：隐私保护数据流水线
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part14/p10_flywheel/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    项目十：端到端 LLM 数据飞轮
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part14/p11_mini_deepseek/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    项目十一：Mini-DeepSeek 预训练复现
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part14/p12_r1_reasoning_flywheel/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    项目十二：R1 推理飞轮
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part14/p13_multimodal_instruction_factory/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    项目十三：多模态指令工厂
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part14/p14_video_generation/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    项目十四：视频生成数据集：从视频源到可用于 T2V 训练的数据流水线
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part14/p15_dataagent_semantic_nl2sql_agent/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    项目十五：基于 DataAgent 构建企业级语义问数助手
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+      
+        
+      
+        
+      
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_19" >
+        
+          
+          <label class="md-nav__link" for="__nav_19" id="__nav_19_label" tabindex="">
+            
+  
+  <span class="md-ellipsis">
+    附录
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_19_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_19">
+            <span class="md-nav__icon md-icon"></span>
+            附录
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../appendix_a_tools_and_frameworks_quick_reference/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    附录A：工具与框架速查表
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../appendix_b_compliance_and_release_checklist/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    附录B：合规与上线检查清单
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../appendix_c_cost_estimation_and_resource_templates/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    附录C：成本估算与资源模板
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../afterword/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    卷末：后记与使用说明
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="目录">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      目录
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      摘要
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#_2" class="md-nav__link">
+    <span class="md-ellipsis">
+      关键词
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#401-vqa" class="md-nav__link">
+    <span class="md-ellipsis">
+      40.1 问题场景：单图表 VQA 的局限性与复合信息图推理的现实需求
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="40.1 问题场景：单图表 VQA 的局限性与复合信息图推理的现实需求">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#4011" class="md-nav__link">
+    <span class="md-ellipsis">
+      40.1.1 传统单图表视觉问答任务边界约束
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#4012" class="md-nav__link">
+    <span class="md-ellipsis">
+      40.1.2 真实复合信息图的推理特征定义
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#4013" class="md-nav__link">
+    <span class="md-ellipsis">
+      40.1.3 现有基准数据集缺口与本数据集研发意义
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#402" class="md-nav__link">
+    <span class="md-ellipsis">
+      40.2 数据集概览：样本规模、领域覆盖与图表类型体系
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="40.2 数据集概览：样本规模、领域覆盖与图表类型体系">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#4021" class="md-nav__link">
+    <span class="md-ellipsis">
+      40.2.1 数据集基础量化指标
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#4022-28" class="md-nav__link">
+    <span class="md-ellipsis">
+      40.2.2 全维度领域覆盖设计（28 大细分领域）
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#4023" class="md-nav__link">
+    <span class="md-ellipsis">
+      40.2.3 子图表全类型清单与布局特征
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#4023_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      40.2.3 子问题全题型清单与组合特征
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#4025" class="md-nav__link">
+    <span class="md-ellipsis">
+      40.2.5 三大核心任务标准化定义
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#403-" class="md-nav__link">
+    <span class="md-ellipsis">
+      40.3 样本结构：以鲨鱼袭击案例具象拆解信息图 - 子图 - 问题链 - 推理链路
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="40.3 样本结构：以鲨鱼袭击案例具象拆解信息图 - 子图 - 问题链 - 推理链路">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#4031" class="md-nav__link">
+    <span class="md-ellipsis">
+      40.3.1 单张复合信息图的物理分层结构
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#4032" class="md-nav__link">
+    <span class="md-ellipsis">
+      40.3.2 链式子问题全链路拆解
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#4033" class="md-nav__link">
+    <span class="md-ellipsis">
+      40.3.3 跨图表证据定位规则与推理路径复盘
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="40.3.3 跨图表证据定位规则与推理路径复盘">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#40331" class="md-nav__link">
+    <span class="md-ellipsis">
+      40.3.3.1 跨图表证据定位
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#40332" class="md-nav__link">
+    <span class="md-ellipsis">
+      40.3.3.2 完整链式推理路径复盘
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#4034" class="md-nav__link">
+    <span class="md-ellipsis">
+      40.3.4 不可作答题目设计目的
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#404" class="md-nav__link">
+    <span class="md-ellipsis">
+      40.4 数据集全流程构建流水线
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="40.4 数据集全流程构建流水线">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#4041" class="md-nav__link">
+    <span class="md-ellipsis">
+      40.4.1 第一步：真实复合信息图素材收集与初筛
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#4042" class="md-nav__link">
+    <span class="md-ellipsis">
+      40.4.2 第二步：子图边界识别与分区标注
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#4043" class="md-nav__link">
+    <span class="md-ellipsis">
+      40.4.3 第三步：多阶链式子问题分层设计
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#4044" class="md-nav__link">
+    <span class="md-ellipsis">
+      40.4.4 第四步：答案交叉核验与标准化标注
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#405" class="md-nav__link">
+    <span class="md-ellipsis">
+      40.5 数据集评测协议：多维度量化评测指标
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="40.5 数据集评测协议：多维度量化评测指标">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#4051" class="md-nav__link">
+    <span class="md-ellipsis">
+      40.5.1 单步子问题独立正确率
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#4052" class="md-nav__link">
+    <span class="md-ellipsis">
+      40.5.2 全链路链式正确率
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#4053" class="md-nav__link">
+    <span class="md-ellipsis">
+      40.5.3 跨图表证据定位准确率
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#406" class="md-nav__link">
+    <span class="md-ellipsis">
+      40.6 评测难点与模型典型失败模式
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="40.6 评测难点与模型典型失败模式">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#4061" class="md-nav__link">
+    <span class="md-ellipsis">
+      40.6.1 核心评测技术难点
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#4062" class="md-nav__link">
+    <span class="md-ellipsis">
+      40.6.2 模型典型失败模式
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#407" class="md-nav__link">
+    <span class="md-ellipsis">
+      40.7 数据集现存约束与后续迭代规划
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="40.7 数据集现存约束与后续迭代规划">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#4071" class="md-nav__link">
+    <span class="md-ellipsis">
+      40.7.1 当前硬性局限
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#4072" class="md-nav__link">
+    <span class="md-ellipsis">
+      40.7.2 未来迭代方向
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#_3" class="md-nav__link">
+    <span class="md-ellipsis">
+      本章小结
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#_4" class="md-nav__link">
+    <span class="md-ellipsis">
+      参考文献
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+  
+  
+
+
+<h1 id="40">第40章：多图表信息图推理数据工程<a class="headerlink" href="#40" title="Permanent link">&para;</a></h1>
+<h2 id="_1">摘要<a class="headerlink" href="#_1" title="Permanent link">&para;</a></h2>
+<p>传统视觉问答（VQA）、图表问答（ChartQA）研究长期聚焦单图表独立解析任务，模型仅需依托单一柱状图、饼图或表格即可完成数值提取与简答，和现实场景中商业报告、行业研报、科普资讯里的复合型信息图应用范式存在巨大鸿沟。本章以多图表信息图推理数据集为落地案例，系统性拆解面向真实复合信息图的数据构建逻辑、任务定义、样本架构与评测体系。该数据集由 354 份真实场景复合信息图、1917 条前后逻辑关联的多阶子问题构成，覆盖 28 大应用领域、20 余种主流图表样式，核心任务拆解为跨图表数据聚合、多步骤数值运算、视觉与上下文语义推理三类。依托鲨鱼袭击统计多轮链式问答样本，具象化演示多问题链路跨子图调取数据、分步推导答案的推理逻辑；同时梳理数据集全流程构建流水线、多维度评测指标，归纳图例误读、跨图表数据混淆、前置计算错误逐级传导等典型模型失效模式（该数据集仅完成样本标注阶段，暂无配套落地算法与基线模型，是当前多模态图表推理领域稀缺的真实场景基准数据集，可为后续跨图表深度推理算法研发提供标准化评测底座），github 网址为 (https://github.com/xychen-zh/multi-chart-infographic-reasoning-dataset) （目前在创建中）。</p>
+<h2 id="_2">关键词<a class="headerlink" href="#_2" title="Permanent link">&para;</a></h2>
+<p>多图表推理；信息图；ChartQA；跨图表聚合；链式问答；视觉上下文推理</p>
+<h2 id="401-vqa">40.1 问题场景：单图表 VQA 的局限性与复合信息图推理的现实需求<a class="headerlink" href="#401-vqa" title="Permanent link">&para;</a></h2>
+<h3 id="4011">40.1.1 传统单图表视觉问答任务边界约束<a class="headerlink" href="#4011" title="Permanent link">&para;</a></h3>
+<p>现有主流图表视觉问答数据集，如 ChartQA、FigureQA、PlotQA 等，在数据设计层面普遍遵循一图一问、单图闭环范式：单张样本图像只包含独立单一图表（单柱状图、单折线图、单饼图等），全部作答所需数据、图例、统计数值均被收拢在同一张可视化视图内，模型仅需要完成三项基础操作：定位图表坐标、读取标注数字、依托单图数据完成一步加减或分类判断。</p>
+<p>从任务难度分层来看，单图表 VQA 任务基本止步于单步信息抽取，任务需求集中在极值查找、单类求和、单一占比计算，不存在跨视图数据联动需求。在实验室标准化数据集环境下，图表样式经过人工规整优化：图例排版规整、坐标轴标注无歧义、数据分区边界清晰、无附加备注文本与补充说明，数据环境经过降噪处理，和互联网、商业出版物原生信息图的制作规范存在本质区别。</p>
+<p>从模型落地短板来看，基于单图表数据集训练的 VQA 模型形成能力偏科：模型擅长局部像素级数值识别，但缺失跨区域信息关联能力。现实世界中，企业年报信息图、民生统计科普图、行业市场调研报告、医疗卫生数据看板极少采用单一图表排版，创作者习惯于通过多子图分区排布实现 “分模块拆解指标、全视图汇总结论” 的可视化表达，不同子图分别承载分类统计、时序变化、地域分布、风险对比等差异化信息，最终结论必须整合多张子图数据才能得出，单图表训练范式无法匹配该类落地场景。</p>
+<h3 id="4012">40.1.2 真实复合信息图的推理特征定义<a class="headerlink" href="#4012" title="Permanent link">&para;</a></h3>
+<p>复合信息图是多子图嵌套式可视化载体，整图为统一图片文件，内部切割为多个物理分区，每个分区承载独立类型子图表，辅以全局图例、分区注释、侧边文字说明、补充警示标注，也是多图表信息图推理数据集的样本底层形态。对比单图表，真实复合信息图推理天然附带三类核心刚需，也是本数据集锚定的三大核心任务，本小节先从落地场景解释任务由来，第二章做标准化定义： </p>
+<ul>
+<li>跨图表数据聚合需求。信息图创作者会拆分统计维度：例如鲨鱼袭击统计案例中，一张子图标注全美各县历史累计鲨鱼袭击总数、两张子图统计近十年各州袭击总量、一张子图罗列意外致死诱因对比数据，不同数据分散在多个独立子视图，想要完成复杂推理的问题，必须聚合多张图表数据，无法依托单张子图完成。 </li>
+<li>多步骤串行数值计算需求。现实问答往往是链式推导：先通过第一个问题锁定目标地域（佛罗里达州沃卢西亚县），再依托该地域所属州调取第二个子图全州统计数据，继而依托多州数据做差值运算，计算步骤具备先后依赖关系，前序答案是后序计算的输入参数，对应多步计算任务属性。 </li>
+<li>视觉 + 上下文联合推理需求。信息图存在大量非数值类标注：物种备注、年份标注、图例符号（致命袭击 / 非致命袭击图标区分）、地域简写符号，部分关键信息不体现在坐标轴数字中，藏于图例、脚注、侧边说明文字内，需要模型结合视觉符号与自然语言上下文综合推理，即视觉与上下文推理任务。</li>
+</ul>
+<h3 id="4013">40.1.3 现有基准数据集缺口与本数据集研发意义<a class="headerlink" href="#4013" title="Permanent link">&para;</a></h3>
+<p>当前全球公开的多模态图表推理基准数据集存在明显供给缺口：人工合成仿真图表数据集占比超 90%，基于网页、报刊、科普出版物抓取的原生真实复合信息图样本稀缺，多数数据集为了降低标注难度，人为拆分多子图信息图为多张独立图片，破坏原图的空间关联与上下文逻辑。在此背景下，多图表信息图推理数据集立足原生真实信息图抓取，保留原图多子图同屏布局、图例全局共用、分区备注穿插的原生结构，填补真实场景跨图表推理评测基准空白。</p>
+<p>从算法研发视角，该数据集的落地可以倒逼 VQA 模型跳出 “单图读取” 固有架构，推动多模态模型新增子图区域分割、跨视图信息记忆存储、多轮计算链路推理三项能力，贴合金融数据分析、市场资讯解读、公共卫生数据研判等产业落地场景。</p>
+<h2 id="402">40.2 数据集概览：样本规模、领域覆盖与图表类型体系<a class="headerlink" href="#402" title="Permanent link">&para;</a></h2>
+<p>本章依托原始数据集文档数据，从样本体量、领域通用性、子图表类型、问答体系四个维度完成数据集全景梳理，精准还原 354 张原图、1917 条子问题的基础参数。</p>
+<h3 id="4021">40.2.1 数据集基础量化指标<a class="headerlink" href="#4021" title="Permanent link">&para;</a></h3>
+<ul>
+<li>
+<p>图像样本总量：数据集收录 354 份经过筛选的真实世界复合信息图。受限于互联网高质量原生多子图信息图资源稀缺的客观现状，文档明确标注当前样本体量偏小，项目团队预留后续迭代扩容规划，未来将持续扩充原图样本池。所有图像均为完整一体化信息图，整图单文件存储，内部内嵌多个独立子图，不做人工切分拆图处理，完整保留原图排版布局、图例共享规则、文本注释位置，最大限度还原人类阅读信息图时的视觉浏览逻辑。</p>
+</li>
+<li>
+<p>问答样本总量：全数据集配套 1917 条具备逻辑关联性的多阶子问题，单张复合信息图配套多条前后依赖的链式子问题，问题和答案一一人工标注核验；额外针对每张信息图追加 1 道无法依托图内现有信息作答的无效问题，用于测试模型拒答能力与鲁棒性，规避模型强行编造数据作答的过拟合缺陷。 从单图平均配比测算：单张信息图平均配套 5.41 条有效推理子问题 + 1 道不可作答测试题，问答密度贴合真实场景人类分步提问习惯。</p>
+</li>
+</ul>
+<h3 id="4022-28">40.2.2 全维度领域覆盖设计（28 大细分领域）<a class="headerlink" href="#4022-28" title="Permanent link">&para;</a></h3>
+<p>为保障数据集评测结果具备算法通用化验证能力，样本素材跨行业抓取，一共覆盖28个细分垂直领域，全面覆盖民生、产业、科研、文娱、经济四大板块，细分领域清单如下：商业、科技、美妆健康、金融理财、市场营销、人文人口、职场就业、社交媒体、教育、餐饮食品、交通运输、计算机与互联网、零售购物、法律法务、体育运动、动物学、能源、环境环保、影视娱乐、房地产、旅游、孕婴育儿、生活方式、家居园艺、工业制造、自然科学、政治历史。</p>
+<p>多领域的设计，可以规避数据集领域单一带来的模型过拟合问题，防止模型仅在单一主题样本上拟合最优，在陌生行业信息图上推理失效；多样化领域下图表表达习惯、图例规范、专业缩写各不相同，进一步拔高视觉上下文推理任务难度，贴近落地场景多变性。</p>
+<p><a class="glightbox" href="../../images/part12/ch40_domain.png" data-type="image" data-width="auto" data-height="auto" data-desc-position="bottom"><img alt="" src="../../images/part12/ch40_domain.png" /></a></p>
+<h3 id="4023">40.2.3 子图表全类型清单与布局特征<a class="headerlink" href="#4023" title="Permanent link">&para;</a></h3>
+<p>数据集内嵌子图摒弃单一柱状、折线局限，囊括22 种业界主流可视化图表样式，完整清单：圆环图、饼图、径向图、径向条形图、气泡图、表格图、色块图、卡片指标图、排名卡片图、排行榜图、地图热力图、树形图、层级矩形树图、普通柱状图、3D 柱状图、堆叠柱状图、分组柱状图、甘特图、折线图、时间轴图、散点图、象形统计图、和弦图。</p>
+<p>单张复合信息图内部采用随机组合排布逻辑：无固定子图搭配规则，创作者原生排版是什么组合，数据集即保留什么组合，出现 “地图 + 表格 + 堆叠柱状 + 象形图”“饼图 + 排名卡片 + 折线时序图” 等任意混搭形式，也是跨图表聚合任务的天然来源。不同图表数据存储逻辑差异化：表格以行列结构化存储数值、地图依托地理分区标注指标、象形图以图标数量表征统计量、时序折线按年份排布变化数据，模型需要适配多格式数据读取规则，再跨格式汇总数据。</p>
+<p><a class="glightbox" href="../../images/part12/ch40_chart.png" data-type="image" data-width="auto" data-height="auto" data-desc-position="bottom"><img alt="" src="../../images/part12/ch40_chart.png" /></a></p>
+<h3 id="4023_1">40.2.3 子问题全题型清单与组合特征<a class="headerlink" href="#4023_1" title="Permanent link">&para;</a></h3>
+<p>数据集配套子问题脱离单一抽取题型限制，囊括 13 类主流推理设问类型，完整清单：数值提取、类别识别、求和运算、均值计算、极值查找、数量统计、位次排序、占比求解、趋势分析、差值运算、异常识别、条件推理、视觉推理。</p>
+<p>单张信息图内部采用题型随机组合设计逻辑：无固定题型搭配规则，每组问题随机选配多种推理类型，形成 “极值提取 + 差值运算 + 条件推理”、“数值统计 + 占比计算 + 视觉推理” 等多元混搭设问形式，是多步跨图推理任务的设计根基。不同题型推理逻辑差异化：提取类侧重图表定点读数、计算类依托多源数值列式运算、条件类结合图例与限定条件筛选数据、视觉类依靠符号与图文上下文推导结论，模型需要适配多类型推理范式，再串联多步骤完成综合作答。</p>
+<p><a class="glightbox" href="../../images/part12/ch40_question.png" data-type="image" data-width="auto" data-height="auto" data-desc-position="bottom"><img alt="" src="../../images/part12/ch40_question.png" /></a></p>
+<h3 id="4025">40.2.5 三大核心任务标准化定义<a class="headerlink" href="#4025" title="Permanent link">&para;</a></h3>
+<ul>
+<li>跨图表数据聚合：将分散在整图不同物理分区、不同类型子图表内的异构数据，按照问题限定的筛选条件完成归类、汇总、合并，打破子图物理分割边界，建立跨视图数据关联。例如鲨鱼案例中，各县历史袭击数（排名卡片子图）、各州十年累计袭击数（柱状统计表子图）、意外致死数据（象形对比子图）分属三个分区，聚合两类分区数据才能完成州际差值计算。该任务是本数据集区别于传统 ChartQA 最核心的标志。</li>
+<li>多步骤串行运算：子问题按照前后依赖链式排布，前序问题输出答案作为后序问题的计算输入参数，需要依次执行查找、提取、加减、求差、平均、占比等串行算术操作，单条最终答案无法一步算出。鲨鱼样本 6 条子问题完整呈现该特征：问题 1 极值查找锁定县域→问题 2 依托县域所属州调取全州总量→问题 3 双州数值做差值运算，三步环环相扣。</li>
+<li>视觉与上下文推理：综合图例符号、图标标记、页面注释、自然语言正文信息完成非数值类推理，关键信息不直接以数字形式展示在坐标轴中。如样本中 2018 马萨诸塞州致命鲨鱼袭击物种答案（大白鲨），数据来源是图标图例标注（致命袭击图标 + 鲨鱼物种备注），无法通过纯数字读取获得，必须结合视觉符号 + 文本备注综合推导。</li>
+</ul>
+<h2 id="403-">40.3 样本结构：以鲨鱼袭击案例具象拆解信息图 - 子图 - 问题链 - 推理链路<a class="headerlink" href="#403-" title="Permanent link">&para;</a></h2>
+<p>本章依托数据集附带的鲨鱼袭击真实标注样例，从整图分层、子图分区、链式子问题、证据点位、分步推理路径五个维度具象化解析样本结构，落地诠释跨图表推理落地逻辑。</p>
+<h3 id="4031">40.3.1 单张复合信息图的物理分层结构<a class="headerlink" href="#4031" title="Permanent link">&para;</a></h3>
+<p><a class="glightbox" href="../../images/part12/ch40_where_the_most_shark_attacks_occur_in_the_united_states_1.jpg" data-type="image" data-width="auto" data-height="auto" data-desc-position="bottom"><img alt="" src="../../images/part12/ch40_where_the_most_shark_attacks_occur_in_the_united_states_1.jpg" /></a></p>
+<p>案例原图为一张一体化科普信息图，内部被天然划分为三大独立子图分区，三个子图分属不同图表类型、不同统计口径、不同数据维度，同框排布、共用页面标题与侧边注释：</p>
+<ul>
+<li>子图 A（Radial Chart）：美国历史累计鲨鱼袭击县域排行榜；关键数据：沃卢西亚（佛罗里达州）累计 343 起，为全美县域极值。该子图用于回答极值类问题（子问题 1）。</li>
+<li>子图 B（Map Chart）：美国近 10 年各州鲨鱼袭击汇总统计；关键数据：佛罗里达州 242 起、夏威夷 71 起；支撑子问题 2、子问题 3 数值来源。</li>
+<li>子图 C（Tabular Chart）：美国近 10 年各州鲨鱼袭击汇总统计；关键数据：2018年发生在马萨诸塞州的致命鲨鱼袭击品种为大白鲨；支撑子问题 4 数值来源。</li>
+<li>子图 D（Bar Chart）：全美年均意外死亡人数统计；关键数据：坠床年均致死 450 人、猫无致死案例；支撑子问题 5、子问题 6 作答。</li>
+</ul>
+<h3 id="4032">40.3.2 链式子问题全链路拆解<a class="headerlink" href="#4032" title="Permanent link">&para;</a></h3>
+<p>本案例单图配套 5 道逻辑递进有效子问题 + 1 道不可作答附加题，5 个子问题依次覆盖极值、计数、差值、条件筛选等推理题型，问题前后强依赖，完整复刻人类分步提问逻辑，逐条拆分推理逻辑与证据来源：</p>
+<table>
+<thead>
+<tr>
+<th>序号</th>
+<th>问题类型</th>
+<th>问题原文</th>
+<th>答案</th>
+<th>数据来源子图</th>
+<th>前置依赖关系</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Q1</td>
+<td>极值</td>
+<td>美国哪个郡县历史鲨鱼袭击记录数量最高？</td>
+<td>Volusia,FL</td>
+<td>子图 A</td>
+<td>无前置，首步基础信息抽取</td>
+</tr>
+<tr>
+<td>Q2</td>
+<td>计数</td>
+<td>Q1 锁定县域所属州近 10 年鲨鱼袭击合计总数？</td>
+<td>242</td>
+<td>子图 B</td>
+<td>必须以 Q1 答案（佛罗里达州）作为筛选关键词</td>
+</tr>
+<tr>
+<td>Q3</td>
+<td>差值</td>
+<td>近十年佛罗里达比夏威夷鲨鱼袭击多多少起？</td>
+<td>171</td>
+<td>子图 B（FL=242、HI=71，242-71=171）</td>
+<td>Q2 确定佛罗里达数值后，再提取夏威夷数据做运算</td>
+</tr>
+<tr>
+<td>Q4</td>
+<td>条件推理</td>
+<td>2018 年马萨诸塞州致命鲨鱼袭击涉事物种？</td>
+<td>Presumed Great White</td>
+<td>子图 C</td>
+<td>无数值运算，依托符号与文本上下文推理</td>
+</tr>
+<tr>
+<td>Q5</td>
+<td>计数</td>
+<td>每年坠床意外致死人数？</td>
+<td>450</td>
+<td>子图 D</td>
+<td>切换第四张子图数据源</td>
+</tr>
+<tr>
+<td>Q6</td>
+<td>计数</td>
+<td>每年被猫致死人数？</td>
+<td>None</td>
+<td>子图 D</td>
+<td>同子图局部数据读取</td>
+</tr>
+</tbody>
+</table>
+<p>从链路可以直观看到：Q1→Q2→Q3 构成三段式跨子图多步计算链路，Q4 属于纯视觉上下文推理，Q5/Q6 为第三张子图内部数据提取，整组问题完整覆盖数据集定义的三大核心任务。</p>
+<h3 id="4033">40.3.3 跨图表证据定位规则与推理路径复盘<a class="headerlink" href="#4033" title="Permanent link">&para;</a></h3>
+<h4 id="40331">40.3.3.1 跨图表证据定位<a class="headerlink" href="#40331" title="Permanent link">&para;</a></h4>
+<p>• 关键词联动定位：Q1 输出 “佛罗里达州沃卢西亚”，关键词【佛罗里达】作为检索标签，从子图 B 海量州名中筛选对应数值，实现跨 A→B 子图跳转；</p>
+<p>• 分区语义定位：问题关键词 “致死、2018、马萨诸塞” 匹配全局侧边时间轴注释文本，跳出三大数值子图，从非图表文本区提取答案；</p>
+<p>• 主题分区定位：关键词 “坠床、猫致死” 匹配子图 D 标题【比鲨鱼更容易致死的意外】，直接锁定对应图。</p>
+<h4 id="40332">40.3.3.2 完整链式推理路径复盘<a class="headerlink" href="#40332" title="Permanent link">&para;</a></h4>
+<p>完整链路：子图 A（县域极值）→关键词提取所属州→跳转子图 B（全州十年数据）→同表提取夏威夷数据→差值运算（Q1-Q2-Q3 闭环）；侧边注释（Q4 物种）→子图 C（意外致死 Q5、Q6）。</p>
+<p>整条链路中，模型需要完成：子图区域划分、关键词跨图检索、数值存储、多步减法运算、图例文本释义等操作，考核模型的综合能力。</p>
+<h3 id="4034">40.3.4 不可作答题目设计目的<a class="headerlink" href="#4034" title="Permanent link">&para;</a></h3>
+<p>按照数据集统一规范，本张鲨鱼信息图额外附带 1 道无图内依据的不可作答问题，例如 “每年多少人出现意外是因为猫？”，原图中并没有这方面的数据，模型无法作答。该设计用于检验模型幻觉抑制能力，避免大模型无依据编造数字，提升评测鲁棒性。</p>
+<h2 id="404">40.4 数据集全流程构建流水线<a class="headerlink" href="#404" title="Permanent link">&para;</a></h2>
+<p>本数据集从原始素材到最终标注数据集落地分为五大标准化工序：原始信息图爬取筛选→多子图区域人工划分→链式问题分层设计→答案人工核验标注。全流程无自动生成图表，保障样本真实度，此外利用大模型自动生成问答，并依托人工完成校验。</p>
+<p><a class="glightbox" href="../../images/part12/ch40_pipeline.png" data-type="image" data-width="auto" data-height="auto" data-desc-position="bottom"><img alt="" src="../../images/part12/ch40_pipeline.png" /></a></p>
+<h3 id="4041">40.4.1 第一步：真实复合信息图素材收集与初筛<a class="headerlink" href="#4041" title="Permanent link">&para;</a></h3>
+<p>素材来源：多个真实信息图表网站，包含bee infographic、best infographics、Centers for Disease Control and Prevention、cool infographics、infographic website。 </p>
+<p>筛选规则：①整图包含≥2 种不同类型子图，满足复合信息图定义；②跨子图存在统计关联指标，具备设计跨图问答的基础条件；③图例、注释、分类标签完整，剔除模糊残缺、关键信息被裁切的劣质图片；④跨 28 大领域均衡抽样，避免单一主题素材扎堆。初筛后保留 354 张有效原图进入下一环节。</p>
+<h3 id="4042">40.4.2 第二步：子图边界识别与分区标注<a class="headerlink" href="#4042" title="Permanent link">&para;</a></h3>
+<p>人工框选单张信息图内部各子图物理边界，区分不同子图（柱状、饼图、表格等）；同步标记每个子图的图表类型、统计周期、统计维度（地域 / 时间 / 分类），为后续问题设计划定数据边界，明确哪些数据跨分区分布、可以用于跨图表聚合类问题设计。该步骤是跨图问题能够落地的前置基础。</p>
+<h3 id="4043">40.4.3 第三步：多阶链式子问题分层设计<a class="headerlink" href="#4043" title="Permanent link">&para;</a></h3>
+<p>针对单张复合信息图，采用类型随机选定 + 模型初生成 + 人工精修校验的半自动化出题方案：标注人员先从极值提取、计数统计、差值运算、条件推理、趋势分析、异常判定等全题型池内，随机选取三类目标题型；再依托大模型，以选定题型为约束、以原图多子图分布结构为依据，批量生成一组具备前后关联的链式候选子问题，强制候选题目覆盖预先选定的三类题型。模型初稿生成完成后，由标注人员逐张对照原图图文、图例与分区数据人工审改：优化问题自然语言表述、修正跨图表逻辑漏洞、剔除脱离图表内容的无效设问，同时逐条读图核算、校准标准答案。全样本经该流程迭代打磨后，最终累计产出 1917 条逻辑通顺、答案有据可依的有效子问题，每张配图包含 1 道无图表信息支撑的不可作答题目用于鲁棒性测试。</p>
+<h3 id="4044">40.4.4 第四步：答案交叉核验与标准化标注<a class="headerlink" href="#4044" title="Permanent link">&para;</a></h3>
+<p>采用双人交叉校验标注机制：标注员 A 完成子问题设计和并提供答案，标注员 B 根据子问题独立读图计算复核答案，针对计算错误、图例误读答案进行二次修正；答案格式统一标准化：数值类统一阿拉伯数字、文本类规范专有名词缩写，规避标注歧义。</p>
+<h2 id="405">40.5 数据集评测协议：多维度量化评测指标<a class="headerlink" href="#405" title="Permanent link">&para;</a></h2>
+<p>区别于传统 ChartQA 仅采用 “答案字符匹配正确率” 单一指标，本数据集针对多步链式推理特性，设计分层评测协议，从局部到全链路全方位量化模型推理性能，核心评测指标：</p>
+<h3 id="4051">40.5.1 单步子问题独立正确率<a class="headerlink" href="#4051" title="Permanent link">&para;</a></h3>
+<p>定义：不考虑问题前后依赖，单独统计每条子问题最终输出答案与标准答案匹配率。仅考核模型单题读数、计算能力，是基础性能指标。局限：无法体现链式推理的链路连贯性，部分模型可以蒙对最终答案，但中间跨图调取环节出错。</p>
+<h3 id="4052">40.5.2 全链路链式正确率<a class="headerlink" href="#4052" title="Permanent link">&para;</a></h3>
+<p>定义：针对一套前后关联的问题链，全部子问题答案 100% 正确才算整条链路命中，任意前置子问题出错即判定整条链路失败。该指标是本数据集最关键评测维度，精准考核多步推理、跨图联动稳定性，直接反映模型连续推理过程中错误传播程度。例如 Q1 县域识别错误，即便 Q2、Q3 计算公式无误，整条链路直接判定错误。</p>
+<h3 id="4053">40.5.3 跨图表证据定位准确率<a class="headerlink" href="#4053" title="Permanent link">&para;</a></h3>
+<p>新增专属评测指标，统计模型能否精准定位答案对应的子图分区 / 图例区域，考核模型子图分割、跨图检索能力。例如需要从子图 A 取关键词、子图 B 取数值，若模型错误从子图 C 调取数据，即判定证据定位失败。该指标专门对标 Cross-chart aggregation 跨图表聚合任务。</p>
+<h2 id="406">40.6 评测难点与模型典型失败模式<a class="headerlink" href="#406" title="Permanent link">&para;</a></h2>
+<p>依托数据集标注规则与样本特征，总结算法落地评测难点与对应的高频失败案例，也是现有 VQA 模型在该数据集上的主要失分点。</p>
+<h3 id="4061">40.6.1 核心评测技术难点<a class="headerlink" href="#4061" title="Permanent link">&para;</a></h3>
+<ul>
+<li>图例多义性解读难点：全局图例共用、图标符号替代文字释义，同一图标在不同子图含义存在异化，需要上下文辅助释义，是视觉与文本推理最大难点；</li>
+<li>跨子图数据筛选难点：同名地域、分类名词分散在不同子图，需要关键词精准匹配筛选，极易出现跨分区数据错配；</li>
+<li>统计口径区分难点：不同子图统计周期（历史累计 / 近十年 / 年均）不统一，忽略时间口径直接混用数值是高频错误；</li>
+<li>多步计算错误传导难点：链式问题前置步骤出错，后续所有计算全部失效，错误沿推理链路逐层传播；</li>
+<li>不可作答问题鲁棒性难点：大模型固有幻觉问题，面对无信息支撑题目强行编造答案，难以精准识别 “无法回答” 场景。</li>
+</ul>
+<h3 id="4062">40.6.2 模型典型失败模式<a class="headerlink" href="#4062" title="Permanent link">&para;</a></h3>
+<ul>
+<li>图例误读失效：混淆致命袭击 / 非致命袭击图标含义，无法通过符号推导鲨鱼物种，Q4 作答错误</li>
+<li>跨图表分区混淆：Q1 佛罗里达县域数据取自 A 子图，模型错误使用 C 子图意外数据带入 Q2 计算</li>
+<li>统计口径遗漏：混淆 “历史累计袭击数” 与 “近十年袭击数”，混用两类不同统计周期数值</li>
+<li>前置错误逐级传播：Q1 错把夏威夷郡县判定为极值，后续 Q2、Q3 全链条数值全部错误</li>
+<li>答案幻觉失效：针对无信息支撑的不可作答题目，模型凭空编造数字作答，鲁棒性不达标</li>
+</ul>
+<h2 id="407">40.7 数据集现存约束与后续迭代规划<a class="headerlink" href="#407" title="Permanent link">&para;</a></h2>
+<p>该项目当前仅停留在数据集标注阶段，无配套落地基线算法、无已训练基准模型。</p>
+<h3 id="4071">40.7.1 当前硬性局限<a class="headerlink" href="#4071" title="Permanent link">&para;</a></h3>
+<ul>
+<li>样本体量约束：受全球高质量原生复合信息图稀缺限制，现有 354 张原图规模偏小，难以支撑超大规模预训练，官方标注后续持续扩充样本库；</li>
+<li>无基准算法基线：全数据集仅完成数据标注工作，学界、项目方均未发布针对性跨图表推理算法，暂无公开 SOTA 指标可供对标参考；</li>
+<li>部分信息图原生瑕疵：少量网络原生信息图存在手写模糊标注、简写不规范问题，小幅提升识别难度，属于素材原生客观缺陷。</li>
+</ul>
+<h3 id="4072">40.7.2 未来迭代方向<a class="headerlink" href="#4072" title="Permanent link">&para;</a></h3>
+<ul>
+<li>素材扩容：持续抓取各领域权威出版物信息图，扩充原图与配套子问题总量；</li>
+<li>基线落地：基于该数据集开发专属跨图表多步推理基线模型，形成公开评测基准；</li>
+<li>题型拓展：新增占比换算、多条件嵌套筛选、单位换算类高阶问题，持续拔高推理难度。</li>
+</ul>
+<h2 id="_3">本章小结<a class="headerlink" href="#_3" title="Permanent link">&para;</a></h2>
+<p>多图表信息图推理数据集立足于真实世界复合信息图原生形态，跳出单图表问答固有范式，通过跨图表聚合、多步串行计算、视觉上下文推理三大任务重构图表 VQA 评测体系；354 张多子图原图 + 1917 条链式子问题的样本架构，搭配分层评测指标，精准还原人类阅读复合型数据可视化内容的认知逻辑。鲨鱼袭击链式问答案例直观验证：真实信息图推理是多分区数据调取、分步计算、符号释义的复合任务，现有单图优化型 VQA 模型存在明显能力短板。受制于研发进度，数据集目前仅完成标注落地、暂无配套算法，但其填补真实多子图信息图推理基准空白的价值突出，能够成为后续跨模态图表深度推理算法迭代的标准化评测底座，推动图表问答技术从实验室标准化仿真数据走向产业真实落地场景。</p>
+<h2 id="_4">参考文献<a class="headerlink" href="#_4" title="Permanent link">&para;</a></h2>
+<ol>
+<li>Masry, A., Long, D. X., Tan, J. Q., Joty, S., &amp; Hoque, E. (2022). ChartQA: A Benchmark for Question Answering about Charts with Visual and Logical Reasoning. ACL 2022.</li>
+<li>Methani, N., Ganguly, P., Khapra, M. M., &amp; Kumar, P. (2020). PlotQA: Reasoning over Scientific Plots. WACV 2020.</li>
+<li>Kahou, S. E., Michalski, V., Atkinson, A., Kádár, Á., Trischler, A., &amp; Bengio, Y. (2017). FigureQA: An Annotated Figure Dataset for Visual Reasoning. arXiv:1710.07300.</li>
+<li>Kafle, K., Price, B., Cohen, S., &amp; Kanan, C. (2018). DVQA: Understanding Data Visualizations via Question Answering. CVPR 2018.</li>
+<li>Mathew, M., Karatzas, D., &amp; Jawahar, C. V. (2021). DocVQA: A Dataset for VQA on Document Images. WACV 2021.</li>
+</ol>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  回到页面顶部
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+    
+      
+      <nav class="md-footer__inner md-grid" aria-label="页脚" >
+        
+          
+          <a href="../ch39_sparse_table_bench_dataset/" class="md-footer__link md-footer__link--prev" aria-label="上一页: 第39章：SparseTable-Bench 表格结构鲁棒性数据工程">
+            <div class="md-footer__button md-icon">
+              
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+            </div>
+            <div class="md-footer__title">
+              <span class="md-footer__direction">
+                上一页
+              </span>
+              <div class="md-ellipsis">
+                第39章：SparseTable-Bench 表格结构鲁棒性数据工程
+              </div>
+            </div>
+          </a>
+        
+        
+          
+          <a href="../ch41_medimage_tool_vqa_dataset/" class="md-footer__link md-footer__link--next" aria-label="下一页: 第41章：MedImage-ToolVQA 医学图像工具调用数据工程">
+            <div class="md-footer__title">
+              <span class="md-footer__direction">
+                下一页
+              </span>
+              <div class="md-ellipsis">
+                第41章：MedImage-ToolVQA 医学图像工具调用数据工程
+              </div>
+            </div>
+            <div class="md-footer__button md-icon">
+              
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M4 11v2h12l-5.5 5.5 1.42 1.42L19.84 12l-7.92-7.92L10.5 5.5 16 11z"/></svg>
+            </div>
+          </a>
+        
+      </nav>
+    
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    <script id="__config" type="application/json">{"base": "../..", "features": ["navigation.sections", "navigation.expand", "navigation.indexes", "navigation.top", "navigation.footer", "toc.follow", "search.suggest", "content.code.copy"], "search": "../../assets/javascripts/workers/search.6ce7567c.min.js", "translations": {"clipboard.copied": "\u5df2\u590d\u5236", "clipboard.copy": "\u590d\u5236", "search.result.more.one": "\u5728\u8be5\u9875\u4e0a\u8fd8\u6709 1 \u4e2a\u7b26\u5408\u6761\u4ef6\u7684\u7ed3\u679c", "search.result.more.other": "\u5728\u8be5\u9875\u4e0a\u8fd8\u6709 # \u4e2a\u7b26\u5408\u6761\u4ef6\u7684\u7ed3\u679c", "search.result.none": "\u6ca1\u6709\u627e\u5230\u7b26\u5408\u6761\u4ef6\u7684\u7ed3\u679c", "search.result.one": "\u627e\u5230 1 \u4e2a\u7b26\u5408\u6761\u4ef6\u7684\u7ed3\u679c", "search.result.other": "# \u4e2a\u7b26\u5408\u6761\u4ef6\u7684\u7ed3\u679c", "search.result.placeholder": "\u952e\u5165\u4ee5\u5f00\u59cb\u641c\u7d22", "search.result.term.missing": "\u7f3a\u5c11", "select.version": "\u9009\u62e9\u5f53\u524d\u7248\u672c"}}</script>
+    
+    
+      <script src="../../assets/javascripts/bundle.525ec568.min.js"></script>
+      
+        <script src="../../javascripts/mathjax.js"></script>
+      
+        <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+      
+    
+  <script id="init-glightbox">const lightbox = GLightbox({"touchNavigation": true, "loop": false, "zoomable": true, "draggable": true, "openEffect": "zoom", "closeEffect": "zoom", "slideEffect": "slide"});
+document$.subscribe(() => { lightbox.reload() });
+</script></body>
+</html>

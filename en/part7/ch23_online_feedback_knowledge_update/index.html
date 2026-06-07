@@ -1,0 +1,3720 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="大模型数据工程：架构、算法及项目实战">
+      
+      
+        <meta name="author" content="ustc">
+      
+      
+        <link rel="canonical" href="https://datascale-ai.github.io/data_engineering_book/en/part7/ch23_online_feedback_knowledge_update/">
+      
+      
+        <link rel="prev" href="../ch22_multimodal_rag_visual_retrieval/">
+      
+      
+        <link rel="next" href="../../part8/ch24_dataops_flywheel_team/">
+      
+      
+      <link rel="icon" href="../../../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.5.39">
+    
+    
+      
+        <title>Chapter 23: Online Feedback Loop and Knowledge Update - Data Engineering for Large Models: Architecture, Algorithms & Projects</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../../assets/stylesheets/main.8c3ca2c6.min.css">
+      
+        
+        <link rel="stylesheet" href="../../../assets/stylesheets/palette.06af60db.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+      <link rel="stylesheet" href="../../../stylesheets/extra.css">
+    
+    <script>__md_scope=new URL("../../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+    
+   <link href="../../../assets/stylesheets/glightbox.min.css" rel="stylesheet"/><style>
+    html.glightbox-open { overflow: initial; height: 100%; }
+    .gslide-title { margin-top: 0px; user-select: text; }
+    .gslide-desc { color: #666; user-select: text; }
+    .gslide-image img { background: white; }
+    .gscrollbar-fixer { padding-right: 15px; }
+    .gdesc-inner { font-size: 0.75rem; }
+    body[data-md-color-scheme="slate"] .gdesc-inner { background: var(--md-default-bg-color);}
+    body[data-md-color-scheme="slate"] .gslide-title { color: var(--md-default-fg-color);}
+    body[data-md-color-scheme="slate"] .gslide-desc { color: var(--md-default-fg-color);}</style> <script src="../../../assets/javascripts/glightbox.min.js"></script></head>
+  
+  
+    
+    
+      
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="white" data-md-color-accent="red">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#chapter-23-online-feedback-loops-and-knowledge-updates" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+  
+
+<header class="md-header md-header--shadow" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="../../" title="Data Engineering for Large Models: Architecture, Algorithms &amp; Projects" class="md-header__button md-logo" aria-label="Data Engineering for Large Models: Architecture, Algorithms & Projects" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            Data Engineering for Large Models: Architecture, Algorithms & Projects
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Chapter 23: Online Feedback Loop and Knowledge Update
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+        <form class="md-header__option" data-md-component="palette">
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: light)" data-md-color-scheme="default" data-md-color-primary="white" data-md-color-accent="red"  aria-label="Switch to dark mode"  type="radio" name="__palette" id="__palette_0">
+    
+      <label class="md-header__button md-icon" title="Switch to dark mode" for="__palette_1" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 7a5 5 0 0 1 5 5 5 5 0 0 1-5 5 5 5 0 0 1-5-5 5 5 0 0 1 5-5m0 2a3 3 0 0 0-3 3 3 3 0 0 0 3 3 3 3 0 0 0 3-3 3 3 0 0 0-3-3m0-7 2.39 3.42C13.65 5.15 12.84 5 12 5s-1.65.15-2.39.42zM3.34 7l4.16-.35A7.2 7.2 0 0 0 5.94 8.5c-.44.74-.69 1.5-.83 2.29zm.02 10 1.76-3.77a7.131 7.131 0 0 0 2.38 4.14zM20.65 7l-1.77 3.79a7.02 7.02 0 0 0-2.38-4.15zm-.01 10-4.14.36c.59-.51 1.12-1.14 1.54-1.86.42-.73.69-1.5.83-2.29zM12 22l-2.41-3.44c.74.27 1.55.44 2.41.44.82 0 1.63-.17 2.37-.44z"/></svg>
+      </label>
+    
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: dark)" data-md-color-scheme="slate" data-md-color-primary="black" data-md-color-accent="red"  aria-label="Switch to light mode"  type="radio" name="__palette" id="__palette_1">
+    
+      <label class="md-header__button md-icon" title="Switch to light mode" for="__palette_0" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="m17.75 4.09-2.53 1.94.91 3.06-2.63-1.81-2.63 1.81.91-3.06-2.53-1.94L12.44 4l1.06-3 1.06 3zm3.5 6.91-1.64 1.25.59 1.98-1.7-1.17-1.7 1.17.59-1.98L15.75 11l2.06-.05L18.5 9l.69 1.95zm-2.28 4.95c.83-.08 1.72 1.1 1.19 1.85-.32.45-.66.87-1.08 1.27C15.17 23 8.84 23 4.94 19.07c-3.91-3.9-3.91-10.24 0-14.14.4-.4.82-.76 1.27-1.08.75-.53 1.93.36 1.85 1.19-.27 2.86.69 5.83 2.89 8.02a9.96 9.96 0 0 0 8.02 2.89m-1.64 2.02a12.08 12.08 0 0 1-7.8-3.47c-2.17-2.19-3.33-5-3.49-7.82-2.81 3.14-2.7 7.96.31 10.98 3.02 3.01 7.84 3.12 10.98.31"/></svg>
+      </label>
+    
+  
+</form>
+      
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+      <div class="md-header__option">
+  <div class="md-select">
+    
+    <button class="md-header__button md-icon" aria-label="Select language">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="m12.87 15.07-2.54-2.51.03-.03A17.5 17.5 0 0 0 14.07 6H17V4h-7V2H8v2H1v2h11.17C11.5 7.92 10.44 9.75 9 11.35 8.07 10.32 7.3 9.19 6.69 8h-2c.73 1.63 1.73 3.17 2.98 4.56l-5.09 5.02L4 19l5-5 3.11 3.11zM18.5 10h-2L12 22h2l1.12-3h4.75L21 22h2zm-2.62 7 1.62-4.33L19.12 17z"/></svg>
+    </button>
+    <div class="md-select__inner">
+      <ul class="md-select__list">
+        
+          <li class="md-select__item">
+            <a href="../../../part7/ch23_online_feedback_knowledge_update/" hreflang="zh" class="md-select__link">
+              简体中文
+            </a>
+          </li>
+        
+          <li class="md-select__item">
+            <a href="./" hreflang="en" class="md-select__link">
+              English
+            </a>
+          </li>
+        
+          <li class="md-select__item">
+            <a href="../../../ja/part7/ch23_online_feedback_knowledge_update/" hreflang="ja" class="md-select__link">
+              日本語
+            </a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</div>
+    
+    
+      <label class="md-header__button md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+      </label>
+      <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+        <div class="md-search__suggest" data-md-component="search-suggest"></div>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/datascale-ai/data_engineering_book/tree/main" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 6.6.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2024 Fonticons, Inc.--><path d="M439.55 236.05 244 40.45a28.87 28.87 0 0 0-40.81 0l-40.66 40.63 51.52 51.52c27.06-9.14 52.68 16.77 43.39 43.68l49.66 49.66c34.23-11.8 61.18 31 35.47 56.69-26.49 26.49-70.21-2.87-56-37.34L240.22 199v121.85c25.3 12.54 22.26 41.85 9.08 55a34.34 34.34 0 0 1-48.55 0c-17.57-17.6-11.07-46.91 11.25-56v-123c-20.8-8.51-24.6-30.74-18.64-45L142.57 101 8.45 235.14a28.86 28.86 0 0 0 0 40.81l195.61 195.6a28.86 28.86 0 0 0 40.8 0l194.69-194.69a28.86 28.86 0 0 0 0-40.81"/></svg>
+  </div>
+  <div class="md-source__repository">
+    GitHub
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+
+<nav class="md-nav md-nav--primary" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../../" title="Data Engineering for Large Models: Architecture, Algorithms &amp; Projects" class="md-nav__button md-logo" aria-label="Data Engineering for Large Models: Architecture, Algorithms & Projects" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    Data Engineering for Large Models: Architecture, Algorithms & Projects
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/datascale-ai/data_engineering_book/tree/main" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 6.6.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2024 Fonticons, Inc.--><path d="M439.55 236.05 244 40.45a28.87 28.87 0 0 0-40.81 0l-40.66 40.63 51.52 51.52c27.06-9.14 52.68 16.77 43.39 43.68l49.66 49.66c34.23-11.8 61.18 31 35.47 56.69-26.49 26.49-70.21-2.87-56-37.34L240.22 199v121.85c25.3 12.54 22.26 41.85 9.08 55a34.34 34.34 0 0 1-48.55 0c-17.57-17.6-11.07-46.91 11.25-56v-123c-20.8-8.51-24.6-30.74-18.64-45L142.57 101 8.45 235.14a28.86 28.86 0 0 0 0 40.81l195.61 195.6a28.86 28.86 0 0 0 40.8 0l194.69-194.69a28.86 28.86 0 0 0 0-40.81"/></svg>
+  </div>
+  <div class="md-source__repository">
+    GitHub
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Table of Contents
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../preface/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Preface
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../translation-status/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chinese 2026 Edition Status
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+      
+        
+      
+        
+      
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_4" >
+        
+          
+          <label class="md-nav__link" for="__nav_4" id="__nav_4_label" tabindex="">
+            
+  
+  <span class="md-ellipsis">
+    Part 1: Overview and Infrastructure
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_4_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_4">
+            <span class="md-nav__icon md-icon"></span>
+            Part 1: Overview and Infrastructure
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part1/ch01_data_change/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 1: The Data Revolution in the Era of Large Models
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part1/ch02_quality_framework/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 2: LLM Data Lifecycle and Quality Evaluation Framework
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part1/ch03_data_stack/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 3: AI-Native Data Stack and Cost Governance
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_5" >
+        
+          
+          <label class="md-nav__link" for="__nav_5" id="__nav_5_label" tabindex="">
+            
+  
+  <span class="md-ellipsis">
+    Part 2: Text Pre-training Data Engineering
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_5">
+            <span class="md-nav__icon md-icon"></span>
+            Part 2: Text Pre-training Data Engineering
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part2/ch04_data_sources/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 4: Data Sources, Acquisition, and Copyright
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part2/ch05_cleaning_dedup/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 5: Cleaning, Deduplication, and Decontamination
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part2/ch06_tokenization_loading/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 6: Tokenization, Serialization, and Efficient Loading
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part2/ch07_data_operations/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 7: Data Evaluation, Quality Closed Loop, and Operational Iteration
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_6" >
+        
+          
+          <label class="md-nav__link" for="__nav_6" id="__nav_6_label" tabindex="">
+            
+  
+  <span class="md-ellipsis">
+    Part 3: Multimodal Data Engineering
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_6_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_6">
+            <span class="md-nav__icon md-icon"></span>
+            Part 3: Multimodal Data Engineering
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part3/ch08_multimodal_image/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 8: Image-Text Pair Data Engineering
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part3/ch09_recaptioning_ocr/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 9: Re-captioning and Document Understanding
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part3/ch10_video_audio/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 10: Video and Audio Data Engineering
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part3/ch11_cross_modal_alignment/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 11: Cross-modal Alignment and Fusion
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+      
+        
+      
+        
+      
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_7" >
+        
+          
+          <label class="md-nav__link" for="__nav_7" id="__nav_7_label" tabindex="">
+            
+  
+  <span class="md-ellipsis">
+    Part 4: Instruction Fine-tuning and Preference Data
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_7_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_7">
+            <span class="md-nav__icon md-icon"></span>
+            Part 4: Instruction Fine-tuning and Preference Data
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part4/ch12_sft/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 12: SFT Data Design and Instruction System
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part4/ch13_preference/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 13: Preference Data and Reward Signals
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part4/ch14_qa/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 14: Annotation Platforms, QA Systems, and Data Operations
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+      
+        
+      
+        
+      
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_8" >
+        
+          
+          <label class="md-nav__link" for="__nav_8" id="__nav_8_label" tabindex="">
+            
+  
+  <span class="md-ellipsis">
+    Part 5: Synthetic Data Engineering
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_8_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_8">
+            <span class="md-nav__icon md-icon"></span>
+            Part 5: Synthetic Data Engineering
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part5/ch15_data_synthesis/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 15: Synthetic Data Factory: From Seed to Verification
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part5/ch16_distillation/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 16: Knowledge Distillation and Model Collaboration
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part5/ch17_quality/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 17: Synthetic Data Quality Control and Model Collapse
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+      
+        
+      
+        
+      
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_9" >
+        
+          
+          <label class="md-nav__link" for="__nav_9" id="__nav_9_label" tabindex="">
+            
+  
+  <span class="md-ellipsis">
+    Part 6: Reasoning and Agent Data Engineering
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_9_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_9">
+            <span class="md-nav__icon md-icon"></span>
+            Part 6: Reasoning and Agent Data Engineering
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part6/ch18_cot/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 18: Chain-of-Thought and Reasoning Data Engineering
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part6/ch19_tool/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 19: Tool-Use and Function Calling Data
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part6/ch20_agent/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 20: Agent Memory and Multi-turn Interaction Data
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+    
+  
+  
+  
+    
+    
+      
+        
+      
+        
+      
+        
+      
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_10" checked>
+        
+          
+          <label class="md-nav__link" for="__nav_10" id="__nav_10_label" tabindex="">
+            
+  
+  <span class="md-ellipsis">
+    Part 7: Application-Level Data Engineering
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_10_label" aria-expanded="true">
+          <label class="md-nav__title" for="__nav_10">
+            <span class="md-nav__icon md-icon"></span>
+            Part 7: Application-Level Data Engineering
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../ch21_rag_pipeline/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 21: RAG Data Pipeline
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../ch22_multimodal_rag_visual_retrieval/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 22: Multimodal RAG and Visual Retrieval
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  <span class="md-ellipsis">
+    Chapter 23: Online Feedback Loop and Knowledge Update
+  </span>
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 23: Online Feedback Loop and Knowledge Update
+  </span>
+  
+
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#231-why-going-live-is-only-the-starting-point-of-the-data-flywheel" class="md-nav__link">
+    <span class="md-ellipsis">
+      23.1 Why "Going Live" Is Only the Starting Point of the Data Flywheel
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="23.1 Why "Going Live" Is Only the Starting Point of the Data Flywheel">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#2311-from-offline-validation-to-real-usage-launch-is-not-the-endpoint" class="md-nav__link">
+    <span class="md-ellipsis">
+      23.1.1 From Offline Validation to Real Usage: Launch Is Not the Endpoint
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#2312-the-real-problem-distribution-is-only-exposed-after-deployment" class="md-nav__link">
+    <span class="md-ellipsis">
+      23.1.2 The Real Problem Distribution Is Only Exposed After Deployment
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#2313-why-online-feedback-is-more-valuable-than-offline-samples" class="md-nav__link">
+    <span class="md-ellipsis">
+      23.1.3 Why Online Feedback Is More Valuable Than Offline Samples
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#2314-why-systems-get-worse-over-time-without-a-feedback-pipeline" class="md-nav__link">
+    <span class="md-ellipsis">
+      23.1.4 Why Systems Get Worse Over Time Without a Feedback Pipeline
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#2315-the-basic-structure-of-the-data-flywheel-from-feedback-to-improvement" class="md-nav__link">
+    <span class="md-ellipsis">
+      23.1.5 The Basic Structure of the Data Flywheel: From Feedback to Improvement
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#2316-section-summary" class="md-nav__link">
+    <span class="md-ellipsis">
+      23.1.6 Section Summary
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#232-event-collection-and-feedback-routing" class="md-nav__link">
+    <span class="md-ellipsis">
+      23.2 Event Collection and Feedback Routing
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="23.2 Event Collection and Feedback Routing">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#2321-why-the-feedback-loop-is-first-an-event-engineering-problem" class="md-nav__link">
+    <span class="md-ellipsis">
+      23.2.1 Why the Feedback Loop Is First an Event Engineering Problem
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#2322-logs-clicks-ratings-corrections-tickets-and-human-handoffs" class="md-nav__link">
+    <span class="md-ellipsis">
+      23.2.2 Logs, Clicks, Ratings, Corrections, Tickets, and Human Handoffs
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#2323-the-difference-between-explicit-and-implicit-feedback" class="md-nav__link">
+    <span class="md-ellipsis">
+      23.2.3 The Difference Between Explicit and Implicit Feedback
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#2324-event-collection-schema-from-raw-logs-to-usable-samples" class="md-nav__link">
+    <span class="md-ellipsis">
+      23.2.4 Event Collection Schema: From Raw Logs to Usable Samples
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#2325-feedback-routing-knowledge-gap-retrieval-defect-generation-defect-and-policy-defect" class="md-nav__link">
+    <span class="md-ellipsis">
+      23.2.5 Feedback Routing: Knowledge Gap, Retrieval Defect, Generation Defect, and Policy Defect
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#2326-feedback-queues-and-operational-ownership" class="md-nav__link">
+    <span class="md-ellipsis">
+      23.2.6 Feedback Queues and Operational Ownership
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#2327-section-summary" class="md-nav__link">
+    <span class="md-ellipsis">
+      23.2.7 Section Summary
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#233-knowledge-updates-rollback-and-version-governance" class="md-nav__link">
+    <span class="md-ellipsis">
+      23.3 Knowledge Updates, Rollback, and Version Governance
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="23.3 Knowledge Updates, Rollback, and Version Governance">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#2331-why-knowledge-updates-must-be-engineered-as-a-managed-process" class="md-nav__link">
+    <span class="md-ellipsis">
+      23.3.1 Why Knowledge Updates Must Be Engineered as a Managed Process
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#2332-new-knowledge-ingestion-from-document-onboarding-to-usable-knowledge-units" class="md-nav__link">
+    <span class="md-ellipsis">
+      23.3.2 New-Knowledge Ingestion: From Document Onboarding to Usable Knowledge Units
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#2333-old-knowledge-expiration-and-conflicting-content-governance" class="md-nav__link">
+    <span class="md-ellipsis">
+      23.3.3 Old-Knowledge Expiration and Conflicting-Content Governance
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#2334-hot-updates-scheduled-updates-and-audited-updates" class="md-nav__link">
+    <span class="md-ellipsis">
+      23.3.4 Hot Updates, Scheduled Updates, and Audited Updates
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#2335-version-freezes-canary-releases-and-rapid-rollback" class="md-nav__link">
+    <span class="md-ellipsis">
+      23.3.5 Version Freezes, Canary Releases, and Rapid Rollback
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#2336-section-summary" class="md-nav__link">
+    <span class="md-ellipsis">
+      23.3.6 Section Summary
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#234-metric-dashboards-and-operational-cadence" class="md-nav__link">
+    <span class="md-ellipsis">
+      23.4 Metric Dashboards and Operational Cadence
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="23.4 Metric Dashboards and Operational Cadence">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#2341-why-the-online-feedback-loop-needs-dashboards" class="md-nav__link">
+    <span class="md-ellipsis">
+      23.4.1 Why the Online Feedback Loop Needs Dashboards
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#2342-online-success-rate-human-handoff-rate-correction-rate-and-knowledge-hit-rate" class="md-nav__link">
+    <span class="md-ellipsis">
+      23.4.2 Online Success Rate, Human Handoff Rate, Correction Rate, and Knowledge-Hit Rate
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#2343-weekly-operations-focused-postmortems-and-major-release-cadence" class="md-nav__link">
+    <span class="md-ellipsis">
+      23.4.3 Weekly Operations, Focused Postmortems, and Major-Release Cadence
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#2344-ownership-boundaries-and-collaboration-in-the-feedback-loop" class="md-nav__link">
+    <span class="md-ellipsis">
+      23.4.4 Ownership Boundaries and Collaboration in the Feedback Loop
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#2345-section-summary" class="md-nav__link">
+    <span class="md-ellipsis">
+      23.4.5 Section Summary
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#235-case-reviews-and-sops" class="md-nav__link">
+    <span class="md-ellipsis">
+      23.5 Case Reviews and SOPs
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="23.5 Case Reviews and SOPs">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#2351-why-an-online-knowledge-update-sop-is-necessary" class="md-nav__link">
+    <span class="md-ellipsis">
+      23.5.1 Why an Online Knowledge-Update SOP Is Necessary
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#2352-case-stale-knowledge-causes-a-wrong-answer" class="md-nav__link">
+    <span class="md-ellipsis">
+      23.5.2 Case: Stale Knowledge Causes a Wrong Answer
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#2353-automated-backflow-of-high-value-feedback-samples" class="md-nav__link">
+    <span class="md-ellipsis">
+      23.5.3 Automated Backflow of High-Value Feedback Samples
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#2354-an-example-online-knowledge-update-sop" class="md-nav__link">
+    <span class="md-ellipsis">
+      23.5.4 An Example Online Knowledge-Update SOP
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#2355-section-summary" class="md-nav__link">
+    <span class="md-ellipsis">
+      23.5.5 Section Summary
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+      
+        
+      
+        
+      
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_11" >
+        
+          
+          <label class="md-nav__link" for="__nav_11" id="__nav_11_label" tabindex="">
+            
+  
+  <span class="md-ellipsis">
+    Part 8: Data Operations and Platform Development
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_11_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_11">
+            <span class="md-nav__icon md-icon"></span>
+            Part 8: Data Operations and Platform Development
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part8/ch24_dataops_flywheel_team/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 24: DataOps Flywheel and Team Organization
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part8/ch25_data_versioning_experiment_tracking/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 25: Data Version Management and Experiment Tracking
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part8/ch26_data_platform_observability/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 26: Data Platform Observability
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+      
+        
+      
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_12" >
+        
+          
+          <label class="md-nav__link" for="__nav_12" id="__nav_12_label" tabindex="">
+            
+  
+  <span class="md-ellipsis">
+    Part 9: Privacy Compliance and Data Security
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_12_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_12">
+            <span class="md-nav__icon md-icon"></span>
+            Part 9: Privacy Compliance and Data Security
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part9/ch27_compliance_framework_and_governance/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 27: Data Compliance Framework and Governance
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part9/ch28_federated_learning_and_privacy_preserving_technologies/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 28: Federated Learning and Privacy-Preserving Technologies
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_13" >
+        
+          
+          <label class="md-nav__link" for="__nav_13" id="__nav_13_label" tabindex="">
+            
+  
+  <span class="md-ellipsis">
+    Part 10: Practical Projects
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_13_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_13">
+            <span class="md-nav__icon md-icon"></span>
+            Part 10: Practical Projects
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part10/10_1_mini_c4/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Project 1: Building a Distributed Mini-C4 Data Pipeline with Ray
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part10/10_2_legal_sft/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Project 2: Vertical-Domain Expert SFT (Legal)
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part10/10_3_llava_instruct/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Project 3: LLaVA Multimodal Instruction Data Factory
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part10/10_4_synthetic_textbook/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Project 4: Synthetic Math and Code Textbook Factory
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part10/10_5_mm_rag/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Project 5: Multimodal RAG Enterprise Financial Report Assistant
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part10/10_6_PRM/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Project 6: CoT Reasoning Dataset Construction and PRM Training
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part10/10_7_Agent_Tooluse/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Project 7: Agent Tool-Use Data Factory
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part10/10_8_dataops/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Project 8: Enterprise DataOps Platform: From Data Projects to Organizational Governance
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part10/10_9_privacy_pipeline/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Project 9: Privacy-Preserving Data Pipeline
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part10/10_10_flywheel/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Project 10: End-to-End LLM Data Flywheel
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_14" >
+        
+          
+          <label class="md-nav__link" for="__nav_14" id="__nav_14_label" tabindex="">
+            
+  
+  <span class="md-ellipsis">
+    Part 11: Open-Source LLM Data Engineering in Practice
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_14_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_14">
+            <span class="md-nav__icon md-icon"></span>
+            Part 11: Open-Source LLM Data Engineering in Practice
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part11/ch29_pretrain_recipes/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 29: LLM Pre-training Data Recipes
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part11/ch30_posttrain_recipes/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 30: LLM Post-training Data Engineering: SFT and Preference Alignment
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part11/ch31_rl_reasoning_data/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 31: Reasoning Models and RL Data Engineering: R1 / QwQ Paradigm
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part11/ch32_multimodel/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 32: VLM Data Recipes from Pre-training to Visual Alignment
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part11/ch33_t21_t2v/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 33: Multimodal Generative Model Data Engineering — T2I and T2V Data Pipelines
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part11/projects/p11_mini_deepseek/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Project 11: Mini-DeepSeek Pre-training Reproduction
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part11/projects/p12_r1_reasoning_flywheel/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Project 12: R1 Reasoning Flywheel
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part11/projects/p13_multimodel_ins/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Project 13: Multimodal Instruction Factory
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part11/projects/p14_vedio_gen/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Project 14: Video Generation Dataset — From Video Source to T2V Training Pipeline
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#231-why-going-live-is-only-the-starting-point-of-the-data-flywheel" class="md-nav__link">
+    <span class="md-ellipsis">
+      23.1 Why "Going Live" Is Only the Starting Point of the Data Flywheel
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="23.1 Why "Going Live" Is Only the Starting Point of the Data Flywheel">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#2311-from-offline-validation-to-real-usage-launch-is-not-the-endpoint" class="md-nav__link">
+    <span class="md-ellipsis">
+      23.1.1 From Offline Validation to Real Usage: Launch Is Not the Endpoint
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#2312-the-real-problem-distribution-is-only-exposed-after-deployment" class="md-nav__link">
+    <span class="md-ellipsis">
+      23.1.2 The Real Problem Distribution Is Only Exposed After Deployment
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#2313-why-online-feedback-is-more-valuable-than-offline-samples" class="md-nav__link">
+    <span class="md-ellipsis">
+      23.1.3 Why Online Feedback Is More Valuable Than Offline Samples
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#2314-why-systems-get-worse-over-time-without-a-feedback-pipeline" class="md-nav__link">
+    <span class="md-ellipsis">
+      23.1.4 Why Systems Get Worse Over Time Without a Feedback Pipeline
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#2315-the-basic-structure-of-the-data-flywheel-from-feedback-to-improvement" class="md-nav__link">
+    <span class="md-ellipsis">
+      23.1.5 The Basic Structure of the Data Flywheel: From Feedback to Improvement
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#2316-section-summary" class="md-nav__link">
+    <span class="md-ellipsis">
+      23.1.6 Section Summary
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#232-event-collection-and-feedback-routing" class="md-nav__link">
+    <span class="md-ellipsis">
+      23.2 Event Collection and Feedback Routing
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="23.2 Event Collection and Feedback Routing">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#2321-why-the-feedback-loop-is-first-an-event-engineering-problem" class="md-nav__link">
+    <span class="md-ellipsis">
+      23.2.1 Why the Feedback Loop Is First an Event Engineering Problem
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#2322-logs-clicks-ratings-corrections-tickets-and-human-handoffs" class="md-nav__link">
+    <span class="md-ellipsis">
+      23.2.2 Logs, Clicks, Ratings, Corrections, Tickets, and Human Handoffs
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#2323-the-difference-between-explicit-and-implicit-feedback" class="md-nav__link">
+    <span class="md-ellipsis">
+      23.2.3 The Difference Between Explicit and Implicit Feedback
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#2324-event-collection-schema-from-raw-logs-to-usable-samples" class="md-nav__link">
+    <span class="md-ellipsis">
+      23.2.4 Event Collection Schema: From Raw Logs to Usable Samples
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#2325-feedback-routing-knowledge-gap-retrieval-defect-generation-defect-and-policy-defect" class="md-nav__link">
+    <span class="md-ellipsis">
+      23.2.5 Feedback Routing: Knowledge Gap, Retrieval Defect, Generation Defect, and Policy Defect
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#2326-feedback-queues-and-operational-ownership" class="md-nav__link">
+    <span class="md-ellipsis">
+      23.2.6 Feedback Queues and Operational Ownership
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#2327-section-summary" class="md-nav__link">
+    <span class="md-ellipsis">
+      23.2.7 Section Summary
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#233-knowledge-updates-rollback-and-version-governance" class="md-nav__link">
+    <span class="md-ellipsis">
+      23.3 Knowledge Updates, Rollback, and Version Governance
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="23.3 Knowledge Updates, Rollback, and Version Governance">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#2331-why-knowledge-updates-must-be-engineered-as-a-managed-process" class="md-nav__link">
+    <span class="md-ellipsis">
+      23.3.1 Why Knowledge Updates Must Be Engineered as a Managed Process
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#2332-new-knowledge-ingestion-from-document-onboarding-to-usable-knowledge-units" class="md-nav__link">
+    <span class="md-ellipsis">
+      23.3.2 New-Knowledge Ingestion: From Document Onboarding to Usable Knowledge Units
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#2333-old-knowledge-expiration-and-conflicting-content-governance" class="md-nav__link">
+    <span class="md-ellipsis">
+      23.3.3 Old-Knowledge Expiration and Conflicting-Content Governance
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#2334-hot-updates-scheduled-updates-and-audited-updates" class="md-nav__link">
+    <span class="md-ellipsis">
+      23.3.4 Hot Updates, Scheduled Updates, and Audited Updates
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#2335-version-freezes-canary-releases-and-rapid-rollback" class="md-nav__link">
+    <span class="md-ellipsis">
+      23.3.5 Version Freezes, Canary Releases, and Rapid Rollback
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#2336-section-summary" class="md-nav__link">
+    <span class="md-ellipsis">
+      23.3.6 Section Summary
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#234-metric-dashboards-and-operational-cadence" class="md-nav__link">
+    <span class="md-ellipsis">
+      23.4 Metric Dashboards and Operational Cadence
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="23.4 Metric Dashboards and Operational Cadence">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#2341-why-the-online-feedback-loop-needs-dashboards" class="md-nav__link">
+    <span class="md-ellipsis">
+      23.4.1 Why the Online Feedback Loop Needs Dashboards
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#2342-online-success-rate-human-handoff-rate-correction-rate-and-knowledge-hit-rate" class="md-nav__link">
+    <span class="md-ellipsis">
+      23.4.2 Online Success Rate, Human Handoff Rate, Correction Rate, and Knowledge-Hit Rate
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#2343-weekly-operations-focused-postmortems-and-major-release-cadence" class="md-nav__link">
+    <span class="md-ellipsis">
+      23.4.3 Weekly Operations, Focused Postmortems, and Major-Release Cadence
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#2344-ownership-boundaries-and-collaboration-in-the-feedback-loop" class="md-nav__link">
+    <span class="md-ellipsis">
+      23.4.4 Ownership Boundaries and Collaboration in the Feedback Loop
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#2345-section-summary" class="md-nav__link">
+    <span class="md-ellipsis">
+      23.4.5 Section Summary
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#235-case-reviews-and-sops" class="md-nav__link">
+    <span class="md-ellipsis">
+      23.5 Case Reviews and SOPs
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="23.5 Case Reviews and SOPs">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#2351-why-an-online-knowledge-update-sop-is-necessary" class="md-nav__link">
+    <span class="md-ellipsis">
+      23.5.1 Why an Online Knowledge-Update SOP Is Necessary
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#2352-case-stale-knowledge-causes-a-wrong-answer" class="md-nav__link">
+    <span class="md-ellipsis">
+      23.5.2 Case: Stale Knowledge Causes a Wrong Answer
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#2353-automated-backflow-of-high-value-feedback-samples" class="md-nav__link">
+    <span class="md-ellipsis">
+      23.5.3 Automated Backflow of High-Value Feedback Samples
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#2354-an-example-online-knowledge-update-sop" class="md-nav__link">
+    <span class="md-ellipsis">
+      23.5.4 An Example Online Knowledge-Update SOP
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#2355-section-summary" class="md-nav__link">
+    <span class="md-ellipsis">
+      23.5.5 Section Summary
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+  
+  
+
+
+<h1 id="chapter-23-online-feedback-loops-and-knowledge-updates">Chapter 23: Online Feedback Loops and Knowledge Updates<a class="headerlink" href="#chapter-23-online-feedback-loops-and-knowledge-updates" title="Permanent link">&para;</a></h1>
+<p>When a RAG system goes live, the real data engineering work has not ended — it has entered a new phase. Before launch, the system mostly faces a controlled test set, a curated knowledge base, and relatively standardized questions. After launch, it starts facing real users, real business processes, and a continuously changing knowledge environment. Users ask questions in non-standard phrasings, enter conversations with omitted conditions, and pose new questions while policies, products, and processes keep evolving. At this point, whether the system is reliable no longer depends solely on how completely the initial knowledge base was built; it depends on whether the system can continuously discover problems, fix them, and update itself from real usage.</p>
+<p>This chapter therefore focuses on the data loop that comes after a system goes live. It discusses how to turn online signals — logs, clicks, ratings, corrections, tickets, and human handoffs — into governable data assets. The concern is not whether a single answer is correct, but whether the system can establish stable feedback routing, error attribution, knowledge updates, version rollback, and an operations cadence, so that every failure becomes input to subsequent improvement.</p>
+<p>Around this goal, the chapter starts with the necessity of an online feedback flywheel, and then discusses event collection and feedback routing, knowledge updates and version governance, metric dashboards and operational cadence, and online incident reviews and SOPs. The core question it answers is: as an LLM application moves from launch to long-term operation, how should data engineering support the system's continuous improvement.</p>
+<hr />
+<h2 id="231-why-going-live-is-only-the-starting-point-of-the-data-flywheel">23.1 Why "Going Live" Is Only the Starting Point of the Data Flywheel<a class="headerlink" href="#231-why-going-live-is-only-the-starting-point-of-the-data-flywheel" title="Permanent link">&para;</a></h2>
+<h3 id="2311-from-offline-validation-to-real-usage-launch-is-not-the-endpoint">23.1.1 From Offline Validation to Real Usage: Launch Is Not the Endpoint<a class="headerlink" href="#2311-from-offline-validation-to-real-usage-launch-is-not-the-endpoint" title="Permanent link">&para;</a></h3>
+<p>In many LLM application projects, going live is often treated as a phase-end milestone. Once the system is built, tested, connected to the knowledge base, deployed to production, and stable on a small set of sample questions, the team often considers the project to be in its wrap-up stage. However, for RAG systems, knowledge assistants, enterprise Q&amp;A systems, and any LLM application facing real users, going live is not the end of data work — it is the point at which the data flywheel truly starts to spin.</p>
+<p>The reason is that the problem distribution seen during the offline phase is typically only a small fraction of the system's real usage. When development teams build evaluation sets, they tend to choose questions that are relatively clear, controllable, and easy to annotate — for example, "What is the reimbursement standard under a given policy?", "How do I enable a particular product feature?", or "Which materials are required for a given process?" These questions have clear answers and map easily to specific document fragments in the knowledge base. But after launch, user questions tend to be more complex, more vague, and closer to real business context. Users do not ask questions following document titles, nor do they proactively supply complete conditions. They might ask: "In my situation, can I claim this?", "Does that process from last time still apply?", or "Why did this metric suddenly change?" Such questions often contain omissions, references, context dependencies, implicit constraints, and cross-document composition. Only in real interaction does the system expose problem types that offline evaluation can hardly cover, which is why data engineering for LLM applications generally cannot stop at building a knowledge base once or completing a single evaluation set. Production is not a static exam; it is a continuously evolving business environment in which user questions, knowledge content, business rules, permission scopes, product versions, and organizational processes all change over time. If a system lacks post-launch feedback collection, issue triage, knowledge updating, and version governance, its capabilities will not only fail to improve — they may gradually degrade as knowledge becomes stale, user needs shift, and errors accumulate.</p>
+<p>The core question of Chapter 23 is therefore how to turn post-launch real usage into a data asset, and how to feed that data back into the knowledge base, retrieval system, generation strategy, and evaluation system continuously. Compared with the RAG data pipelines discussed in Chapter 21 and the multimodal visual retrieval discussed in Chapter 22, this chapter focuses more on the closed-loop mechanisms that operate after the system is running: how the system perceives failure, attributes problems, updates knowledge, verifies whether updates are effective, and incorporates these actions into a stable operational rhythm.</p>
+<p>From this perspective, going live with an LLM application is not delivery completion but entry into a new phase of the data lifecycle. The key in this phase is no longer one-off construction, but continuous collection, continuous diagnosis, continuous backfilling, and continuous governance. Only with such a closed-loop capability can RAG and multimodal knowledge applications move from "demoable" to "operable."</p>
+<hr />
+<h3 id="2312-the-real-problem-distribution-is-only-exposed-after-deployment">23.1.2 The Real Problem Distribution Is Only Exposed After Deployment<a class="headerlink" href="#2312-the-real-problem-distribution-is-only-exposed-after-deployment" title="Permanent link">&para;</a></h3>
+<p>Offline evaluation sets usually have clear boundaries. They come from existing documents, questions curated by business experts, typical samples constructed by the project team, or sets of questions automatically generated by models. Such data is very important for pre-launch validation, but it cannot fully represent how real users ask questions. Real user questions typically exhibit three salient characteristics: non-standard phrasing, incomplete conditions, and shifting goals.</p>
+<p>First, user phrasing is not always consistent with terminology in the knowledge base. If the system relies solely on standard terms from documents to retrieve, it may fail to recall the correct knowledge. Online feedback data can expose these differences in real expressions, helping the system add synonyms, business aliases, and query rewriting rules.</p>
+<p>Second, user questions often lack key conditions. For instance, an employee asks "Can this expense be reimbursed?" without stating the expense type, location, employee identity, project ownership, or approval status. If the system answers directly, it may ignore applicability conditions; if it recognizes missing conditions, it should follow up or give a conditional answer. Such issues are hard to cover well in offline evaluations because evaluation samples are usually curated into relatively complete questions, while real users often supply only fragmentary information.</p>
+<p>Third, user goals may shift across multiple turns of interaction. A user may start by asking about a policy clause, then move to "help me decide if my case applies," and further to "give me a paragraph I can send to finance." This means the system needs to move from single-turn Q&amp;A toward task-style interaction, and the multi-turn trajectories recorded in online logs are an important data source for understanding real task flows.</p>
+<p>This gap between the real problem distribution and the offline evaluation distribution can be called "post-launch distribution drift." It does not necessarily mean model capability has degraded; rather, it indicates the system has entered a more realistic and complex data environment. Many RAG systems perform unstably after launch — not because the offline evaluation was fabricated, but because the offline evaluation cannot cover the long-tail distribution of production questions.</p>
+<p><em>Table 23-1: Differences Between Offline Evaluation Questions and Real Online Questions</em></p>
+<table>
+<thead>
+<tr>
+<th>Dimension</th>
+<th>Offline Evaluation Questions</th>
+<th>Real Online Questions</th>
+<th>Impact on the System</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Phrasing</td>
+<td>Standard terms, well-structured</td>
+<td>Colloquial, abbreviations, many aliases</td>
+<td>Affects query understanding and retrieval recall</td>
+</tr>
+<tr>
+<td>Condition completeness</td>
+<td>Usually contains necessary conditions</td>
+<td>Often omits identity, time, version, and scenario</td>
+<td>Requires follow-up questions, condition recognition, risk warning</td>
+</tr>
+<tr>
+<td>Question boundary</td>
+<td>Mostly single questions</td>
+<td>Multi-intent, multi-constraint, cross-document composition</td>
+<td>Requires decomposition and multi-route retrieval</td>
+</tr>
+<tr>
+<td>Context dependency</td>
+<td>Usually no context or fixed context</td>
+<td>Constantly changing across multi-turn interactions</td>
+<td>Requires state management and conversation memory</td>
+</tr>
+<tr>
+<td>How errors surface</td>
+<td>Through human judgment or metric computation</td>
+<td>Through follow-ups, downvotes, corrections, abandonment</td>
+<td>Requires online feedback collection and attribution</td>
+</tr>
+</tbody>
+</table>
+<p>As Figure 23-1 contrasts, in real systems, this gap directly shapes data engineering priorities. Before launch, teams focus more on knowledge base coverage, parsing quality, index structure, and basic evaluation; after launch, teams must also focus on user phrasing, failure samples, feedback annotation, knowledge expiration, permission mis-recall, citation trustworthiness, and multi-turn task continuity. In other words, data engineering before launch emphasizes "getting the system built," while data engineering after launch emphasizes "making the system continuously better."</p>
+<p><a class="glightbox" href="../../../images/part7/%E5%9B%BE23_1.png" data-type="image" data-width="auto" data-height="auto" data-desc-position="bottom"><img alt="Figure 23-1: From Offline Evaluation to Real Online Problem Distribution" src="../../../images/part7/%E5%9B%BE23_1.png" /></a></p>
+<p><em>Figure 23-1: From Offline Evaluation to Real Online Problem Distribution</em></p>
+<p>The real online problem distribution also has a strong temporal dimension. Certain problems may suddenly surge due to a new policy release, a new product launch, an organizational reshuffle, or an external event. For example, after a reimbursement policy update, employees may cluster around questions about old-versus-new rule differences; after a new feature launches, customers may cluster around usage and limitations; after an earnings release, analysts may cluster around why certain metrics changed. Without online question monitoring, it is hard to detect such shifts in time, let alone drive synchronized updates of the knowledge base and retrieval strategy. Therefore, production-grade LLM applications must treat online questions as a continuously generated data asset. User questions are not noise — they are the most authentic demand signals the system receives; user failures are not isolated incidents but entry points for system improvement. Only by establishing a collection and analysis mechanism oriented toward the online distribution can a team truly understand the audience, scenarios, and boundaries the system serves.</p>
+<hr />
+<h3 id="2313-why-online-feedback-is-more-valuable-than-offline-samples">23.1.3 Why Online Feedback Is More Valuable Than Offline Samples<a class="headerlink" href="#2313-why-online-feedback-is-more-valuable-than-offline-samples" title="Permanent link">&para;</a></h3>
+<p>Online feedback matters because it simultaneously offers three properties: authenticity, timeliness, and behavioral signal.</p>
+<p>Authenticity means online feedback comes from real users performing real tasks. Offline evaluation samples are often human-curated with clear question boundaries and answers that are relatively easy to annotate; online feedback, in contrast, contains real user expressions, real context, and real business goals. It not only tells the team "can the system answer the standard question," but also "does the system help the user complete the task."</p>
+<p>Timeliness means online feedback reflects the latest changes in knowledge and demand. Enterprise knowledge bases, product documentation, process policies, and business rules are constantly updated. Even a high-quality offline evaluation set can quickly go stale. Online feedback can expose new problems, new terms, new demands, and new conflicts at the first moment. For example, after a new product version launches, if users frequently ask "does the old API still work?", it suggests the documentation may need a migration note; if users repeatedly press on the applicability scope of a policy, the original clause may be unclear or the retrieval may not have covered all the conditions.</p>
+<p>Behavioral signal means users express attitudes not only through explicit feedback but also through behaviors that indirectly reveal system quality. Explicit feedback includes upvotes, downvotes, corrections, written comments, and human flags; implicit feedback includes whether the user continues asking, rewrites the question, clicks on cited sources, copies the answer, hands off to a human, or abandons the session. Compared with a single correct/incorrect label, these behavioral signals are much closer to the real user experience.</p>
+<p>For example, a user who does not downvote but rewrites the same question three times in a row suggests the previous answers may not have met their need; a user who clicks on a cited source and stays for a long time suggests the answer triggered a need to verify; a user who immediately hands off to a human after seeing the answer suggests the system may not be covering high-risk or complex judgment scenarios. When such signals are collected systematically, they can be transformed into high-value training samples, evaluation samples, and knowledge update tasks.</p>
+<p><em>Table 23-2: Types and Value of Online Feedback Signals</em></p>
+<table>
+<thead>
+<tr>
+<th>Feedback Type</th>
+<th>Typical Source</th>
+<th>Problem It Reflects</th>
+<th>Optimization Actions It Can Drive</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Explicit positive</td>
+<td>Upvote, acceptance, "this helped"</td>
+<td>Answer likely met the need</td>
+<td>Distill high-quality Q&amp;A samples, strengthen templates</td>
+</tr>
+<tr>
+<td>Explicit negative</td>
+<td>Downvote, correction, error report</td>
+<td>Answer wrong, incomplete, or untrustworthy</td>
+<td>Add to failure bank, trigger error attribution</td>
+</tr>
+<tr>
+<td>Follow-up</td>
+<td>User keeps asking, adds conditions</td>
+<td>Previous answer insufficient or condition unclear</td>
+<td>Improve follow-up strategy and context assembly</td>
+</tr>
+<tr>
+<td>Rewrite</td>
+<td>User rephrases and re-asks</td>
+<td>Query understanding or recall failed</td>
+<td>Add synonym expressions and query-rewrite samples</td>
+</tr>
+<tr>
+<td>Citation click</td>
+<td>User views source document</td>
+<td>User needs to verify evidence</td>
+<td>Improve citation readability and evidence locating</td>
+</tr>
+<tr>
+<td>Human handoff</td>
+<td>Ticket, human takeover</td>
+<td>System cannot complete high-risk judgment</td>
+<td>Build human-review and backfill flows</td>
+</tr>
+<tr>
+<td>Session abandonment</td>
+<td>Drop-off, no continuation</td>
+<td>UX failure without explicit feedback</td>
+<td>Use as weak negative samples for analysis</td>
+</tr>
+</tbody>
+</table>
+<p>Online feedback also helps teams build a prioritization mindset. In the offline phase, teams may chase overall metric improvements — Recall@k (number of relevant results in the top k), Answer Accuracy, Citation Accuracy, and so on. After launch, what truly needs prioritization is often not all errors, but high-frequency errors, high-risk errors, and high-impact errors. High-frequency errors mean many users encounter the same issue, so fixes pay off quickly; high-risk errors involve legal, financial, medical, compliance, or permission-sensitive scenarios that must be controlled first; high-impact errors may appear in critical business processes such as approvals, reimbursements, contract review, customer service, and incident handling. Online feedback supplies error frequency, user impact scope, and business consequences, helping the team direct scarce resources toward the most valuable fixes.</p>
+<p>It is important to note that online feedback is not equivalent to directly trainable data. User feedback often contains noise, emotion, misclicks, and missing context. A downvote may be because the answer is genuinely wrong, but it could also be because the answer is too long, the tone is off, no direct conclusion is given, or the user's input was incomplete. Therefore, online feedback must be cleaned, attributed, annotated, and routed before it can become a usable data asset. This is precisely the data-engineering core of the online feedback loop: not simply collecting logs, but turning user behavior into structured problems, turning structured problems into fix tasks, and turning fix tasks into new knowledge, indexes, evaluations, and model improvements.</p>
+<hr />
+<h3 id="2314-why-systems-get-worse-over-time-without-a-feedback-pipeline">23.1.4 Why Systems Get Worse Over Time Without a Feedback Pipeline<a class="headerlink" href="#2314-why-systems-get-worse-over-time-without-a-feedback-pipeline" title="Permanent link">&para;</a></h3>
+<p>An LLM application without a feedback pipeline may perform well at launch but gradually degrade after running for some time. "Degradation" here does not necessarily mean model parameters get worse; it means the mismatch between the system and the real business keeps widening.</p>
+<p>The first type of degradation comes from knowledge expiration. Enterprise policies, product features, API docs, organizational processes, pricing rules, and compliance requirements all change. If the knowledge base is not updated in time, the system keeps answering based on stale knowledge. More dangerously, stale knowledge often still looks reasonable, so users have trouble detecting it. For instance, the system may answer reimbursement standards based on an old policy or explain feature limits based on an old product manual. Such errors are insidious and especially require online feedback and version governance to catch.</p>
+<p>The second type of degradation comes from shifts in user phrasing. As users become familiar with the system, the way they ask changes. Early users may try standard questions, while later users pose more complex, more specific, and more task-oriented questions. A system that only optimizes for the pre-launch evaluation set will increasingly fail to cover real needs. Users will then repeatedly follow up, rewrite their questions, or switch to human channels, and both usage and trust will decline.</p>
+<p>The third type of degradation comes from error accumulation. RAG and multimodal systems usually consist of multiple stages: collection, parsing, chunking, indexing, retrieval, reranking, context assembly, generation, and citation. A small error at any stage can amplify downstream. Without a failure-sample pipeline and error-attribution mechanism, such problems persist and recur across more user questions.</p>
+<p>The fourth type of degradation comes from broken organizational ownership. After launch, the system may enter an unmaintained state: the algorithm team thinks delivery is done, the business team sees problems as model-capability issues, the platform team only cares about service availability, and content maintainers only upload documents. Without a unified feedback loop, user issues bounce among teams but never get clearly fixed. Over time, the system appears live but its quality keeps declining.</p>
+<p><em>Table 23-3: Typical Degradation Paths Without an Online Feedback Pipeline</em></p>
+<table>
+<thead>
+<tr>
+<th>Source of Degradation</th>
+<th>Concrete Symptom</th>
+<th>User-Side Perception</th>
+<th>Root Cause</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Knowledge expiration</td>
+<td>Old policies, APIs, and processes still retrieved</td>
+<td>Plausible but actually wrong answers</td>
+<td>Lack of knowledge versioning and expiration governance</td>
+</tr>
+<tr>
+<td>Phrasing mismatch</td>
+<td>Colloquial queries miss formal documents</td>
+<td>"Off-topic" answers</td>
+<td>Lack of online query analysis and synonym backfill</td>
+</tr>
+<tr>
+<td>Repeated errors</td>
+<td>Same errors keep recurring</td>
+<td>"The system never learns"</td>
+<td>Lack of failure bank and fix loop</td>
+</tr>
+<tr>
+<td>Citation failure</td>
+<td>Answers cite removed or wrong locations</td>
+<td>Users can't verify answers</td>
+<td>No citation anchor validation or index update</td>
+</tr>
+<tr>
+<td>Broken ownership</td>
+<td>Issues can't be routed to a team or module</td>
+<td>Long fix cycles</td>
+<td>Lack of feedback routing and operational mechanisms</td>
+</tr>
+<tr>
+<td>Evaluation distortion</td>
+<td>High offline metrics but low online satisfaction</td>
+<td>"Tests well but unusable in practice"</td>
+<td>No online sample backflow into the offline evaluation set</td>
+</tr>
+</tbody>
+</table>
+<p>Such degradation is not a problem of a single model or module, but the result of a system that has not entered a continuous operational state. An LLM application without a feedback pipeline is like a production system that gets one health check at launch and is never monitored, reviewed, fixed, or version-updated afterward. As the business environment evolves, the system naturally drifts further from real demand.</p>
+<p>The online feedback loop, therefore, is not a "nice-to-have" operations feature — it is a basic capability for production-grade LLM applications. It determines whether the system can learn from usage, turn failures into improvements, and remain stable amid changes in knowledge and demand.</p>
+<hr />
+<h3 id="2315-the-basic-structure-of-the-data-flywheel-from-feedback-to-improvement">23.1.5 The Basic Structure of the Data Flywheel: From Feedback to Improvement<a class="headerlink" href="#2315-the-basic-structure-of-the-data-flywheel-from-feedback-to-improvement" title="Permanent link">&para;</a></h3>
+<p>The online feedback loop can be understood as a data flywheel. "Data flywheel" here does not mean the system magically gets better unsupervised; it means the system can continuously generate new data through real usage, and after this data is filtered, annotated, attributed, and governed, it feeds back to improve the knowledge base, indexes, retrieval, generation, and evaluation systems, thereby improving the next round of user experience.</p>
+<p>As shown in Figure 23-2, a complete data flywheel usually includes six stages: event collection, feedback routing, error attribution, fix action, regression evaluation, and post-deployment validation. Event collection is the entry point. The system needs to record the user query, conversation context, retrieval results, context-assembly content, generated answer, cited sources, user feedback, and subsequent behavior. Without sufficiently complete logs, downstream attribution is nearly impossible. For example, if only the final answer is logged but recalled results are not, one cannot tell whether the error came from retrieval or generation; if cited sources are not logged, one cannot tell whether the answer was based on the correct evidence. Feedback routing turns raw feedback into problem types. Negative feedback from users may correspond to knowledge gaps, retrieval failures, citation errors, generated hallucinations, permission issues, or product UX problems. Different problems need to enter different queues — they cannot all be dumped on the model or content team. Error attribution localizes failure phenomena to specific stages of the system pipeline. An incorrect answer may be because the document was never ingested, or it was ingested but parsing failed, or parsing was correct but chunking broke the semantics, or retrieval recalled the wrong version, or the model failed to follow the evidence. The more accurate the attribution, the more effective the fix. Fix actions include knowledge supplementation, document re-parsing, metadata correction, index rebuild, query-rewrite augmentation, rerank sample augmentation, prompt adjustments, refusal-policy updates, and evaluation-set expansion. A fix is not merely "edit the answer," but mapping the error to reusable data and system improvements. Regression evaluation verifies whether a fix is effective. Every knowledge update, index update, or strategy change may bring new issues. The system therefore needs to run regression tests using the golden set, the online failure set, and targeted challenge sets to ensure fixing the current issue does not break existing capabilities. Post-deployment validation observes the online effect after the fix — for example, whether negative feedback on similar questions drops, citation click-through improves, the human handoff rate decreases, or the number of follow-up turns decreases. These metrics then feed into the next round of feedback analysis.</p>
+<p><a class="glightbox" href="../../../images/part7/%E5%9B%BE23_2.png" data-type="image" data-width="auto" data-height="auto" data-desc-position="bottom"><img alt="Figure 23-2: The Online Feedback Data Flywheel for LLM Applications" src="../../../images/part7/%E5%9B%BE23_2.png" /></a></p>
+<p><em>Figure 23-2: The Online Feedback Data Flywheel for LLM Applications</em></p>
+<p>The key to the data flywheel is not "the more automated, the better," but "every category of feedback has a stable destination." For low-risk, high-frequency issues, automated rules and model assistance can handle routing and backfill; for high-risk issues, human review, expert annotation, and pre-deployment approval are required. Mature systems usually adopt a hybrid mode of "automation + human governance," using automation for scale and humans for high-risk decisions and quality calibration.</p>
+<p>The data flywheel must also be combined with version management. Every backfill should record its source, triggering issue, fix action, scope of impact, and evaluation results. Otherwise, the team cannot tell which batch of data, which index change, or which policy adjustment produced a given improvement. Without versions, there is no review; without review, there is no stable iteration.</p>
+<hr />
+<h3 id="2316-section-summary">23.1.6 Section Summary<a class="headerlink" href="#2316-section-summary" title="Permanent link">&para;</a></h3>
+<p>This section discussed why going live with an LLM application is not the endpoint of data work, but the starting point of the online feedback loop and data flywheel. Offline evaluation helps validate the system before launch, but real user problems are only fully exposed in production. Post-launch problem distributions tend to be more colloquial, long-tailed, task-oriented, and context-dependent, so the system must perceive real demand through online feedback continuously.</p>
+<p>Online feedback is highly valuable because it simultaneously offers authenticity, timeliness, and behavioral signals. Upvotes, downvotes, follow-ups, rewrites, citation clicks, human handoffs, and session drop-offs are all important clues to system quality. With structured processing, these signals can enter the failure bank, knowledge update queue, evaluation expansion, and broader optimization pipeline.</p>
+<p>A system without a feedback pipeline faces knowledge expiration, phrasing mismatches, repeated errors, citation failures, and broken ownership. It may perform well in the early days but gradually exhibit "tests well, used poorly." Production-grade LLM applications must therefore organize feedback collection, routing, attribution, fixes, regression evaluation, and validation into a stable data flywheel.</p>
+<p>The next section will further discuss the event collection and feedback routing mechanisms in the online feedback loop, focusing on how feedback sources such as logs, clicks, ratings, corrections, tickets, and human handoffs feed into a unified data processing pipeline, and how to distinguish among knowledge gaps, retrieval defects, generation defects, and policy defects.</p>
+<hr />
+<h2 id="232-event-collection-and-feedback-routing">23.2 Event Collection and Feedback Routing<a class="headerlink" href="#232-event-collection-and-feedback-routing" title="Permanent link">&para;</a></h2>
+<h3 id="2321-why-the-feedback-loop-is-first-an-event-engineering-problem">23.2.1 Why the Feedback Loop Is First an Event Engineering Problem<a class="headerlink" href="#2321-why-the-feedback-loop-is-first-an-event-engineering-problem" title="Permanent link">&para;</a></h3>
+<p>The online feedback loop does not begin with a "user downvote"; it begins with whether the system can record one interaction event completely. In an LLM application, a seemingly simple Q&amp;A often involves many critical stages behind the scenes: user input, context state, retrieval request, recalled results, reranked results, context assembly, model generation, cited sources, user behavior, and subsequent feedback. If this information is not systematically logged, the team can hardly tell where a failure actually occurred, nor can it turn online issues into reusable data assets. This section therefore starts from a basic point: the foundation of the online feedback loop is not the annotation platform or the training script — it is the event collection system. Only when the system can decompose a user interaction into a traceable, auditable, replayable chain of events can the downstream feedback routing, error attribution, knowledge updating, and regression evaluation rest on a reliable foundation.</p>
+<p>In traditional web or app systems, event collection focuses more on product-behavior metrics such as clicks, views, dwell time, and conversion. In LLM applications, event collection must also cover model-side and data-side information. In a RAG Q&amp;A system, for instance, simply logging "what the user asked" and "what the model answered" is not enough. The system must also log which documents were recalled at that moment, the score of each document, which fragments ended up in the context, which sources the model cited, and whether the user later followed up or handed off to a human. Without this information, failure review becomes very difficult. If a user downvotes an answer but the system only kept the final reply, the team cannot tell whether the issue was that the knowledge base had nothing relevant, retrieval failed to recall the right fragment, rerank misordered them, context assembly omitted a key condition, or the model produced a wrong conclusion on top of correct evidence. In the end, all issues get lumped into a vague "the model answers poorly," and fix actions lose focus. Worse, incomplete event collection can lead a system to repeatedly fix the wrong stage. For example, the real cause of a problem may be a stale document version, but because the system did not log the version of the recalled document, the team may mistake it for a prompt issue and keep tuning the prompt; another real cause may be permission filtering hiding the correct document, but if permission-judgment results are not logged, the team may attribute it to insufficient vector-retrieval recall. Over time, such misattribution wastes massive engineering resources and masks the real data problems.</p>
+<p>Production-grade LLM applications, therefore, must design event collection as the first layer of infrastructure in the data loop. It must serve both online monitoring and offline review; record both user behavior and model inputs/outputs; and cover both successful and failed samples. Only in this way can the system precipitate real usage into data that can be analyzed, annotated, and backfilled.</p>
+<hr />
+<h3 id="2322-logs-clicks-ratings-corrections-tickets-and-human-handoffs">23.2.2 Logs, Clicks, Ratings, Corrections, Tickets, and Human Handoffs<a class="headerlink" href="#2322-logs-clicks-ratings-corrections-tickets-and-human-handoffs" title="Permanent link">&para;</a></h3>
+<p>Online feedback signals usually come from multiple channels. Their trustworthiness, granularity, and intended use differ, so they cannot simply be lumped together. A mature feedback system typically collects logs, clicks, ratings, corrections, tickets, and human handoffs at the same time, and unifies them into a single event schema.</p>
+<p>Logs are the most fundamental source of feedback. They record the complete pipeline during system execution, including the user query, session id, retrieval results, context fragments, model output, cited sources, response latency, error codes, and policy hits. Logs do not in themselves express user satisfaction, but they provide the evidence necessary for downstream error attribution. Without logs, the team can only see failed outcomes; with logs, the team can see the failure process.</p>
+<p>Click behavior reflects how users interact with results. In a RAG system, whether the user clicks on cited sources, expands further evidence, copies the answer, or jumps to the original document can serve as indirect signals about answer trustworthiness and usability. For example, a user who frequently clicks citations but still keeps asking may indicate the citations are present but the explanation is insufficient; a user who accepts the answer without clicking any citation may indicate the answer is clear enough, or that the user is insensitive to sources. Such signals require contextual judgment to interpret.</p>
+<p>Ratings are the most common form of explicit feedback, including upvotes, downvotes, star ratings, and "did this solve your problem?" buttons. Rating signals are simple, direct, and easy to count, but they are also susceptible to subjective bias. For instance, a user may downvote because the answer was too long, or because the system refused to answer a high-risk question — that does not necessarily mean the answer was factually wrong. Ratings are therefore well suited as an entry point for problem discovery and should not be used directly as training labels.</p>
+<p>Corrections are more valuable than ratings because they usually contain the user's specific indication of what is wrong. A user may flag "wrong citation," "this policy has expired," "the answer ignored probationary employees," or "the value read from the chart is incorrect." Such feedback can directly enter the error-attribution pipeline and help build high-quality backfill samples. That said, corrections also need review, because user corrections are not always accurate — especially in specialized domains, where business experts or content owners should confirm them.</p>
+<p>Tickets are an important source of complex issues. In enterprise settings, many users will not provide complete feedback in the chat interface, but instead submit issues through customer support systems, internal ticketing systems, ops platforms, or business workflows. Tickets typically contain richer context, screenshots, attachments, and the outcome of human handling — making them well suited for building high-value failure samples. However, ticket data tends to be structurally heterogeneous and requires redaction, denoising, field mapping, and task-type tagging.</p>
+<p>Human handoff is a critical feedback signal in high-risk or complex tasks. When the system cannot answer, the user requests a human, or policy mandates a handoff, those handoff events should all be logged. Human handoff not only indicates the system's current capability boundary but also provides a trace of how experts handle the case. If the system also records how the human eventually solved the problem, it can learn which knowledge is missing, which follow-up conditions are necessary, and which answering strategies need adjustment.</p>
+<p><em>Table 23-4: Online Feedback Sources and Their Data Value</em></p>
+<table>
+<thead>
+<tr>
+<th>Feedback Source</th>
+<th>Typical Content</th>
+<th>Strengths</th>
+<th>Limitations</th>
+<th>Suitable Downstream Actions</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>System logs</td>
+<td>Query, recalled fragments, context, answer, citations, latency</td>
+<td>Complete pipeline, supports postmortems</td>
+<td>Does not directly express satisfaction</td>
+<td>Error attribution, performance diagnostics, regression evaluation</td>
+</tr>
+<tr>
+<td>Click behavior</td>
+<td>Citation clicks, evidence expansion, copy, jumping to source</td>
+<td>Reflects real usage behavior</td>
+<td>Multiple plausible semantic explanations</td>
+<td>Evidence usability analysis, citation optimization</td>
+</tr>
+<tr>
+<td>Ratings</td>
+<td>Upvote, downvote, star rating, "resolved?"</td>
+<td>Simple, direct, easy to aggregate</td>
+<td>Subjective noise</td>
+<td>Failure-sample triage, satisfaction monitoring</td>
+</tr>
+<tr>
+<td>Corrections</td>
+<td>Flagged errors, supplied correct answers, expired-content reports</td>
+<td>High information density, high value</td>
+<td>Requires review</td>
+<td>Knowledge updates, sample backfill</td>
+</tr>
+<tr>
+<td>Tickets</td>
+<td>Issue description, screenshots, handling process, final conclusion</td>
+<td>Rich context, suitable for complex cases</td>
+<td>Heterogeneous structure, costly to process</td>
+<td>Specialized dataset construction, SOP improvement</td>
+</tr>
+<tr>
+<td>Human handoff</td>
+<td>Reason for handoff, expert trace, final reply</td>
+<td>Reveals system capability boundaries</td>
+<td>Depends on standardized human processes</td>
+<td>High-risk policy optimization, expert sample bank</td>
+</tr>
+</tbody>
+</table>
+<p>These feedback sources together form the raw data layer of the online feedback loop. In practice, teams should not rely on a single signal but build multi-signal fusion. A downvote sample accompanied by citation clicks, repeated follow-ups, and human handoff deserves more priority than a generic downvote; a session with no explicit downvote but three consecutive rewrites should also be flagged as a potential failure sample.</p>
+<p>To enable such fusion, the system needs to unify events across three levels: session, question, and answer. The session level records the user's full trajectory across an interaction; the question level records each user input along with its retrieval and generation process; the answer level records the model output, cited evidence, user feedback, and subsequent behavior. Only with such hierarchical event structure does feedback routing move beyond coarse statistics into an actionable engineering loop.</p>
+<hr />
+<h3 id="2323-the-difference-between-explicit-and-implicit-feedback">23.2.3 The Difference Between Explicit and Implicit Feedback<a class="headerlink" href="#2323-the-difference-between-explicit-and-implicit-feedback" title="Permanent link">&para;</a></h3>
+<p>Online feedback can be divided into explicit feedback and implicit feedback. Explicit feedback is evaluation or correction proactively given by the user; implicit feedback is the satisfaction, confusion, or failure signal indirectly revealed by user behavior. The two play different roles in the data loop and must be used distinctly.</p>
+<p>The strength of explicit feedback is semantic clarity. When users downvote or submit a correction, they usually mean the answer did not meet expectations. For the data-operations team, explicit negative feedback is the most direct entry point for failure samples. Explicit positive feedback can be used to distill high-quality Q&amp;A pairs and analyze which answer formats, evidence organization, and explanatory styles are best received. However, explicit feedback suffers from coverage gaps. Most users do not actively provide feedback, especially when the answer is mediocre but not severely wrong — they may simply leave or rephrase. Explicit feedback can also carry emotional or misclick noise. For instance, a user may downvote because the system did not produce the conclusion they wanted, even though the system's refusal was the correct safety policy; a user may downvote because the answer was too conservative, even though from a compliance standpoint a conservative answer is preferable.</p>
+<p>The strength of implicit feedback is broad coverage. Nearly every user behavior can serve as an implicit signal: dwell time, number of follow-ups, query rewrites, citation clicks, copying the answer, switching pages, human handoff, and session drop-off. These signals do not require active user evaluation and are therefore closer to real usage. But their interpretation is harder. Continuing to ask may mean the answer was incomplete or that the user wants to dig deeper; clicking citations may mean the answer is trustworthy or that it is being doubted; leaving the session may mean the question is resolved or that the system was unhelpful. Implicit feedback usually cannot serve as a standalone label and must be analyzed alongside explicit feedback, log data, and business context.</p>
+<p><em>Table 23-5: Comparison of Explicit and Implicit Feedback</em></p>
+<table>
+<thead>
+<tr>
+<th>Dimension</th>
+<th>Explicit Feedback</th>
+<th>Implicit Feedback</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Typical forms</td>
+<td>Upvote, downvote, rating, correction, comment</td>
+<td>Follow-up, rewrite, citation click, copy, human handoff, drop-off</td>
+</tr>
+<tr>
+<td>Strengths</td>
+<td>Direct semantics, easy to interpret</td>
+<td>Broad coverage, close to real behavior</td>
+</tr>
+<tr>
+<td>Limitations</td>
+<td>Low coverage, subjective noise</td>
+<td>Ambiguous meaning, requires contextual interpretation</td>
+</tr>
+<tr>
+<td>Data value</td>
+<td>Good entry point for failure samples and human review queues</td>
+<td>Good for behavior analysis, weak labels, and trend monitoring</td>
+</tr>
+<tr>
+<td>Usage approach</td>
+<td>Should pass through review before entering annotation/backfill</td>
+<td>Must be combined with logs and other signals for judgment</td>
+</tr>
+<tr>
+<td>Risks</td>
+<td>User misjudgment, emotional or malicious feedback</td>
+<td>Misinterpreting behavior; treating normal exploration as failure</td>
+</tr>
+</tbody>
+</table>
+<p>In practice, explicit feedback can be treated as a "strong signal" and implicit feedback as a "weak signal." Strong signals are suitable as direct entries to human review and the failure bank; weak signals are suitable for surfacing anomalous trends and shortlisting candidate problems. For example, a rising downvote rate on a category of questions is a strong failure signal; rising average follow-up turns, falling citation click-through, and rising handoff rate — even without many downvotes — also indicate possible quality regression.</p>
+<p>To use implicit feedback more reliably, the system can design composite rules. For instance, a session can be flagged as "likely unresolved" if all of the following hold: the user rephrases a similar question within 30 seconds after receiving an answer; two consecutive turns recall different documents but no answer is accepted; the session ultimately hands off to a human or files a ticket. Such composite signals are more reliable than any single behavior and are better suited as candidates for routing and sampling.</p>
+<hr />
+<h3 id="2324-event-collection-schema-from-raw-logs-to-usable-samples">23.2.4 Event Collection Schema: From Raw Logs to Usable Samples<a class="headerlink" href="#2324-event-collection-schema-from-raw-logs-to-usable-samples" title="Permanent link">&para;</a></h3>
+<p>To turn online feedback into a data asset, a unified event schema is required. The role of the event schema is to organize raw interaction logs into a data structure that can be searched, analyzed, annotated, and replayed. Without a unified schema, feedback data scatters across logging systems, instrumentation platforms, support systems, databases, and model services, making a closed loop impossible.</p>
+<p>A complete event schema should include at least six categories of information: user and session info, query info, retrieval info, generation info, feedback info, and governance info. User and session info identifies the context of an interaction. It need not include the user's real identity, but should record anonymized user ID, session ID, tenant, permission scope, language, device, and timestamp. For enterprise systems, it should also record the user's organization, role, or permission group, in order to detect over-recall across permissions. Query info describes the user input itself, including the raw query, normalized query, query-rewrite result, identified intent, entities, constraints, and contextual references. For instance, when a user asks "Can this still be claimed?", the system should record what "this" refers to in the previous turn, "claim" maps to reimbursement intent, and which conditions are missing (expense type, location, etc.). Retrieval info is one of the most important parts of event collection in a RAG system. The system must record the index version queried, recalled document IDs, chunk IDs, scores, rerank scores, the fragments that finally entered the context, fragments that were filtered out, and the reasons for filtering. Without this, retrieval failure and generation failure are hard to tell apart. Generation info includes model version, prompt version, context length, final answer, cited sources, refusal policy, generation latency, and safety-policy hits. For multimodal systems, it should also record image regions, bboxes, OCR text, table structures, and visual evidence IDs. Feedback info includes both explicit and implicit feedback: explicit signals such as upvotes, downvotes, ratings, user corrections, and free-text comments; implicit signals such as follow-ups, rewrites, citation clicks, copy-answer events, human handoffs, ticket submissions, and session drop-offs. Governance info covers PII redaction status, log retention period, whether the sample is allowed to be used for training, and whether it is in the human-review queue.</p>
+<p><em>Table 23-6: Core Fields of the Online Feedback Event Schema</em></p>
+<table>
+<thead>
+<tr>
+<th>Field Category</th>
+<th>Core Fields</th>
+<th>Purpose</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Session info</td>
+<td>session_id, turn_id, timestamp, tenant, user_role</td>
+<td>Reconstruct interaction context and permission scope</td>
+</tr>
+<tr>
+<td>Query info</td>
+<td>raw_query, normalized_query, intent, entities, missing_slots</td>
+<td>Analyze user intent, entities, and missing conditions</td>
+</tr>
+<tr>
+<td>Retrieval info</td>
+<td>index_version, retrieved_docs, chunk_ids, scores, rerank_scores</td>
+<td>Judge correctness of recall and ranking</td>
+</tr>
+<tr>
+<td>Context info</td>
+<td>selected_context, citation_anchors, context_length</td>
+<td>Reproduce the evidence actually seen by the model</td>
+</tr>
+<tr>
+<td>Generation info</td>
+<td>model_version, prompt_version, answer, refusal_flag, latency</td>
+<td>Judge generation policy and model behavior</td>
+</tr>
+<tr>
+<td>Feedback info</td>
+<td>rating, correction_text, clicks, follow_up, handoff_flag</td>
+<td>Identify explicit and implicit feedback</td>
+</tr>
+<tr>
+<td>Governance info</td>
+<td>pii_status, training_allowed, review_status, retention_policy</td>
+<td>Control compliance, review, and data-usage boundaries</td>
+</tr>
+</tbody>
+</table>
+<p>At the implementation level, the event schema should serve not only log storage but also downstream sample construction. That is, when designing fields, the team should anticipate how these data will later flow into evaluation sets, the failure bank, the knowledge update queue, and model training. For example, <code>index_version</code> and <code>prompt_version</code> look like engineering fields, but they determine whether version-level attribution is possible later; <code>citation_anchors</code> looks like a display field, but it determines whether the answer can be verified against the correct evidence; <code>training_allowed</code> looks like a compliance field, but it determines whether the data can flow into training or fine-tuning.</p>
+<p><a class="glightbox" href="../../../images/part7/%E5%9B%BE23_3.png" data-type="image" data-width="auto" data-height="auto" data-desc-position="bottom"><img alt="Figure 23-3: Online Feedback Event Collection and Routing Pipeline" src="../../../images/part7/%E5%9B%BE23_3.png" /></a></p>
+<p><em>Figure 23-3: Online Feedback Event Collection and Routing Pipeline</em></p>
+<hr />
+<h3 id="2325-feedback-routing-knowledge-gap-retrieval-defect-generation-defect-and-policy-defect">23.2.5 Feedback Routing: Knowledge Gap, Retrieval Defect, Generation Defect, and Policy Defect<a class="headerlink" href="#2325-feedback-routing-knowledge-gap-retrieval-defect-generation-defect-and-policy-defect" title="Permanent link">&para;</a></h3>
+<p>After collection, the most critical work is feedback routing — mapping user feedback to different categories of system problems and pushing them into corresponding fix queues. Without routing, all feedback piles up as vague "user dissatisfaction" and yields no real improvement.</p>
+<p>In RAG and LLM applications, common problems can be divided into four categories: knowledge gap, retrieval defect, generation defect, and policy defect. A knowledge gap means the knowledge base does not contain enough information to answer the user's question. This can happen because relevant documents have not been ingested, documents are outdated, new business areas have not been supplemented, the knowledge granularity is too coarse, or the information exists only in human experience and has not been documented. The typical symptom is that the system cannot retrieve relevant evidence, or the answer can only speak in generalities. Fix actions usually include adding documents, updating FAQs, adding structured fields, introducing expert knowledge, or establishing a knowledge-update workflow. A retrieval defect means the correct answer exists in the knowledge base, but the system did not recall it or did not rank it at the top. This is very common in RAG systems. It can stem from mismatch between query phrasing and document terminology, chunking that breaks semantics, embeddings that fail on domain terms, missing keyword indexes, wrong metadata filters, or failed rerank ranking. Fix actions include adding synonyms, optimizing query rewrite, adjusting the chunking strategy, supplementing metadata, improving hybrid retrieval, or adding rerank training samples. A generation defect means the correct evidence was retrieved, but the model went wrong while generating the answer — ignoring evidence, misreading it, overgeneralizing, omitting conditions, citing incompletely, or producing the wrong style. Fix actions usually include adjusting prompts, adding format constraints, introducing answer templates, strengthening citation requirements, adding refusal rules, or adding the failure samples to a generation evaluation set. A policy defect means the system has design issues in high-risk, permission, refusal, follow-up, or handoff policies. For instance, the user's question lacks key conditions but the system does not follow up; the user's request involves high-risk judgment but the system answers directly; a user lacks permission to view certain documents but the system still recalls them; certain questions should hand off to a human but the system keeps generating. Such issues are usually not model-capability shortcomings but undefined product or safety policies.</p>
+<p>The key to feedback routing is establishing executable judgment rules. A team cannot simply tag feedback as "error"; it must further ask: does the correct knowledge exist? Was it recalled? Did it enter the context? Did permission or safety policies fire? Together, these questions form the minimal diagnostic chain for feedback routing. For one downvote sample, for example, analysis can proceed as follows: if no correct content exists in the knowledge base → knowledge gap; if it exists but was not recalled → retrieval defect; if recalled but did not enter the final context → ranking or context-assembly issue; if context is correct but the answer is wrong → generation defect; if the question itself lacks conditions but the system did not follow up → policy defect; if the answer is correct yet the user remains unhappy → likely a product-experience issue.</p>
+<hr />
+<h3 id="2326-feedback-queues-and-operational-ownership">23.2.6 Feedback Queues and Operational Ownership<a class="headerlink" href="#2326-feedback-queues-and-operational-ownership" title="Permanent link">&para;</a></h3>
+<p>Feedback routing is not only a technical classification problem; it is also an ownership problem. Each class of problem should map to an explicit processing queue, owning team, SLA, and acceptance criteria. Otherwise, even if the system can identify the problem, it cannot drive fixes.</p>
+<p>Knowledge gaps are usually owned by content owners, business experts, or knowledge-base operators, who decide whether to add documents, update clauses, add FAQs, or restructure knowledge. Retrieval defects are usually owned by the data engineering and retrieval engineering teams, focusing on chunks, indexes, metadata, query rewrite, and rerank. Generation defects are usually owned by the model-application team and involve prompts, context formatting, citation constraints, and generation policies. Policy defects require joint decision-making among product, business, compliance, and security teams, because they touch on whether the system should answer, how it should answer, and when it should hand off. Product-experience issues are usually owned by the product and frontend teams.</p>
+<p>To improve processing efficiency, feedback queues should have priorities. Priority can be determined jointly by impact scope, risk level, frequency, and fix cost. High-frequency low-risk problems can be batched; low-frequency high-risk problems require immediate human review; low-frequency low-risk problems can enter a periodic optimization pool; high-frequency high-risk problems should trigger a dedicated postmortem and version-level fix. In a mature online feedback system, every feedback sample should have an explicit status, such as: pending routing, pending review, pending fix, fixed, pending regression, deployed, closed. Only this way can the team track whether an online failure sample really completed the loop, rather than sitting in the issue list.</p>
+<hr />
+<h3 id="2327-section-summary">23.2.7 Section Summary<a class="headerlink" href="#2327-section-summary" title="Permanent link">&para;</a></h3>
+<p>This section discussed event collection and feedback routing in the online feedback loop. For an LLM application, the feedback loop is first an event-engineering problem. The system must record user input, retrieval results, context assembly, model output, cited sources, user behavior, and subsequent feedback in full, in order to support downstream error attribution and data backfill.</p>
+<p>Online feedback sources include logs, clicks, ratings, corrections, tickets, and human handoffs. Different signals have different data value and noise characteristics, so they must be organized through a unified event schema. Explicit feedback is semantically direct and well suited as a failure-sample entry point; implicit feedback has broader coverage and is well suited for trend monitoring and candidate sample selection.</p>
+<p>After collection, the system must route problems into knowledge gaps, retrieval defects, generation defects, policy defects, and product-experience issues. Different problems map to different owning teams and fix actions. Only when each class of feedback enters an explicit queue and passes through review, fix, regression, and deployment validation does online feedback truly become a data flywheel driving continuous improvement.</p>
+<p>The next section will further discuss knowledge updates, rollback, and version governance, focusing on how new-knowledge ingestion, old-knowledge expiration, conflicting-content governance, canary releases, and rapid rollback support long-term stable operation of production LLM applications.</p>
+<hr />
+<h2 id="233-knowledge-updates-rollback-and-version-governance">23.3 Knowledge Updates, Rollback, and Version Governance<a class="headerlink" href="#233-knowledge-updates-rollback-and-version-governance" title="Permanent link">&para;</a></h2>
+<h3 id="2331-why-knowledge-updates-must-be-engineered-as-a-managed-process">23.3.1 Why Knowledge Updates Must Be Engineered as a Managed Process<a class="headerlink" href="#2331-why-knowledge-updates-must-be-engineered-as-a-managed-process" title="Permanent link">&para;</a></h3>
+<p>The ultimate goal of the online feedback loop is not to collect user problems or compute satisfaction; it is to enable the system to continuously fix itself based on real usage. The most central category of fix action is the knowledge update. For RAG systems, enterprise knowledge assistants, customer-service bots, compliance Q&amp;A, and multimodal document retrieval systems, the knowledge base is not a static asset — it is a dynamic asset that changes with the business, policies, products, processes, and external environment.</p>
+<p>In practice, the complexity of knowledge updates comes from three sources. First, knowledge itself has a shelf life. Corporate policies are adjusted, product features iterate, API fields are deprecated, pricing rules change, organizations restructure, and laws and regulations get updated. For such content, old knowledge does not simply become "less valuable" — it may become wrong information. If a RAG system keeps recalling stale knowledge, it will produce answers that look well-grounded but are actually outdated. Such errors are more dangerous than having no answer, because users tend to trust answers that carry citations. Second, knowledge can conflict. A single system may contain formal policies, historical policies, FAQs, meeting minutes, customer-service scripts, product manuals, and ad-hoc notices. These sources differ in timestamp, authority, and applicable scope. Without knowledge-priority and conflict-governance rules, the system may simultaneously recall contradictory evidence within a single answer. For example, a formal policy may require three-level approval but an old FAQ still says two-level approval; product docs may say a feature is enterprise-only but customer-service scripts simplify it as "available to all users." Such conflicts cannot be resolved by the model alone; they must be handled in advance by knowledge governance. Third, knowledge updates affect system behavior. Adding documents, modifying metadata, rebuilding indexes, or adjusting chunking strategies can change retrieval results. One update may fix one class of problems while breaking another that was working. Knowledge updates must therefore be versioned, tested, canaried, and monitored — just like code releases — rather than directly overwriting the production knowledge base.</p>
+<p>Production-grade RAG systems must upgrade knowledge updates from a "document maintenance action" into an "engineering release process." Every knowledge change should have an explicit source, change description, owner, scope of impact, evaluation result, release time, and rollback plan. Only then can the system remain stable amid continuous updates rather than drifting out of control under frequent changes.</p>
+<hr />
+<h3 id="2332-new-knowledge-ingestion-from-document-onboarding-to-usable-knowledge-units">23.3.2 New-Knowledge Ingestion: From Document Onboarding to Usable Knowledge Units<a class="headerlink" href="#2332-new-knowledge-ingestion-from-document-onboarding-to-usable-knowledge-units" title="Permanent link">&para;</a></h3>
+<p>New-knowledge ingestion is the most common scenario in knowledge updates. It may come from new policy releases, new product documentation, new FAQ additions, new earnings reports, new contract templates, or knowledge gaps revealed by online feedback. Compared with initial knowledge base construction, post-launch ingestion places greater emphasis on incrementality, controllability, and verifiability.</p>
+<p>A complete new-knowledge ingestion process usually has five steps: source verification, content parsing, structuring, index update, and post-deployment validation.</p>
+<p>Source verification is the first step. The system must record where the knowledge comes from, whether it is licensed for use, whether it is the official version, and whether business or legal teams have approved it. For internal enterprise systems, the authority of document sources matters enormously. Formal policies, approved product manuals, and FAQs confirmed by business owners should have higher priority; meeting minutes, casual chat records, and personal notes should be weighted lower or treated only as auxiliary references. Content parsing converts the document into a machine-processable structure. For PDFs, Word docs, web pages, tables, images, and scans, parsing quality directly determines downstream retrieval effectiveness. Post-launch ingestion must not skip parsing-quality checks, especially for documents involving tables, charts, headers/footers, footnotes, version numbers, and section hierarchies. If parsing loses applicability conditions, units of measure, table structure, or document version, even successful indexing may yield wrong answers. Structuring converts parsed content into knowledge units and adds metadata such as source document, section path, publish time, effective time, expiration time, applicable subjects, permission scope, document version, knowledge type, and authority level. For production-grade RAG systems, metadata is not auxiliary — it is the basis for retrieval, filtering, ranking, and conflict governance. Index update writes knowledge units into the retrieval system. Depending on the architecture, this may involve vector indexes, keyword indexes, structured indexes, graph databases, table indexes, and multimodal indexes. Incremental updates must pay special attention to index consistency: has the new knowledge been written to all index types, do old indexes need deletion or down-weighting, are parent/child indexes synchronized, and do multimodal chart regions stay aligned with their textual descriptions. Post-deployment validation is the final step before production. The system should run a regression test using a relevant question set to verify that the new knowledge is recalled, cited, and generated correctly. If the new knowledge was added to fix an online failure case, the original failing query should be replayed to confirm the issue is resolved.</p>
+<p><em>Table 23-7: Key Checks in the New-Knowledge Ingestion Flow</em></p>
+<table>
+<thead>
+<tr>
+<th>Stage</th>
+<th>Key Question</th>
+<th>Focus</th>
+<th>Common Risks</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Source verification</td>
+<td>Is the document trustworthy and usable?</td>
+<td>Source, permissions, owner, approval status</td>
+<td>Informal documents entering production knowledge base</td>
+</tr>
+<tr>
+<td>Content parsing</td>
+<td>Is the document read correctly?</td>
+<td>Sections, tables, charts, footnotes, version numbers</td>
+<td>Garbled tables, lost conditions, OCR errors</td>
+</tr>
+<tr>
+<td>Structuring</td>
+<td>Are usable knowledge units formed?</td>
+<td>Chunks, metadata, scope, citation anchors</td>
+<td>Missing version, effective time, or permission info</td>
+</tr>
+<tr>
+<td>Index update</td>
+<td>Are correct indexes written?</td>
+<td>Vector, keyword, structured fields, multimodal indexes</td>
+<td>Index inconsistency, old content not retired</td>
+</tr>
+<tr>
+<td>Post-deploy validation</td>
+<td>Is the issue actually fixed?</td>
+<td>Failure-query replay, citation check, regression evaluation</td>
+<td>Fixes one issue but introduces new errors</td>
+</tr>
+</tbody>
+</table>
+<p>New-knowledge ingestion should further distinguish "additive updates" from "replacement updates." Additive updates add new content to existing knowledge — new FAQs, new cases, new chart explanations; replacement updates mean old knowledge no longer applies — policy version upgrades, deprecated API fields, pricing adjustments. The risks differ: additive updates mainly concern recall coverage and ranking; replacement updates must focus on retiring old knowledge and governing conflicts.</p>
+<hr />
+<h3 id="2333-old-knowledge-expiration-and-conflicting-content-governance">23.3.3 Old-Knowledge Expiration and Conflicting-Content Governance<a class="headerlink" href="#2333-old-knowledge-expiration-and-conflicting-content-governance" title="Permanent link">&para;</a></h3>
+<p>The most easily overlooked issue in knowledge updates is not the failure to add new knowledge — it is the failure to retire old knowledge. In many systems, teams keep adding new documents but rarely actively clean up old ones. The result is a knowledge base that grows ever larger, retrieval that gets noisier, and a model that may see conflicting old-versus-new evidence at generation time.</p>
+<p>Old-knowledge expiration usually takes three forms: time expiration, version expiration, and scope expiration. Time expiration means a piece of knowledge is valid only within a specific window — temporary notices, phased policies, promotional rules, quarterly reports, project plans, all of which have clear time boundaries. Time-expired knowledge does not necessarily need to be deleted but must be correctly down-weighted or filtered during retrieval and generation. Version expiration means a new version replaces an old one. After product manual v3.0 ships, some feature descriptions in v2.0 may no longer apply; after a 2025 policy release, certain processes from the 2023 policy may be obsolete. Without document-version and effective-status fields, old versions are hard to keep out of recall. Scope expiration means the knowledge is still valid, but does not apply to the current user or scenario. For instance, a reimbursement policy may apply only to full-time employees and not to interns; a feature may apply only to the enterprise edition; a procedure may apply only to domestic business, not overseas branches. Scope expiration is not about staleness but about applicability conditions that have not been properly recognized.</p>
+<p>Conflicting-content governance must operate at the knowledge level, the index level, and the generation level. At the knowledge level, each piece of knowledge should have an authority level and an applicable scope. Formal policies outrank FAQs; the newest version outranks older ones; structured fields outrank informal descriptions; content confirmed by business owners outranks user comments or meeting minutes. At the index level, retrieval should recognize time, version, permissions, and applicable subjects. Expired content can be deleted, archived, down-weighted, or made visible only in historical queries. Content that should be kept but not recalled by default should be controlled via metadata filters. At the generation level, the model should be asked to recognize evidence conflicts. When multiple versions or contradictory fragments appear in the context, the model should not naively concatenate answers but pick trustworthy evidence based on version, date, and authority, and where necessary surface a "the knowledge base currently has conflicts; human confirmation required." That said, this capability cannot rely solely on the model — upstream data governance remains key.</p>
+<p><em>Table 23-8: Strategies for Old-Knowledge Expiration and Conflict Governance</em></p>
+<table>
+<thead>
+<tr>
+<th>Problem Type</th>
+<th>Typical Symptom</th>
+<th>Data-Governance Strategy</th>
+<th>System-Side Handling</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Time expiration</td>
+<td>Temporary notices, quarterly rules still recalled</td>
+<td>Add effective-time and expiration-time fields</td>
+<td>Filter or down-weight by query time</td>
+</tr>
+<tr>
+<td>Version expiration</td>
+<td>Old and new product manuals hit simultaneously</td>
+<td>Maintain version numbers and current-version flags</td>
+<td>Default to recalling latest; archive old versions</td>
+</tr>
+<tr>
+<td>Scope expiration</td>
+<td>Policies cited for users they don't apply to</td>
+<td>Tag applicable subjects, regions, roles, permissions</td>
+<td>Metadata filters and permission filters</td>
+</tr>
+<tr>
+<td>Source conflict</td>
+<td>FAQ contradicts formal policy</td>
+<td>Establish authority levels and source priority</td>
+<td>Boost authoritative content in rerank</td>
+</tr>
+<tr>
+<td>Content conflict</td>
+<td>Same metric, process, or rule has contradictions</td>
+<td>Set up conflict detection and human review queue</td>
+<td>Conflict warning or refusal</td>
+</tr>
+<tr>
+<td>Citation failure</td>
+<td>Answer cites removed or relocated documents</td>
+<td>Maintain citation anchors and document mappings</td>
+<td>Citation validation and index rebuild</td>
+</tr>
+</tbody>
+</table>
+<p>The difficulty of conflict governance is that it spans teams. Content teams update documents, business teams confirm rules, platform teams own indexing, algorithm teams own retrieval/ranking, and product teams own display and warnings. Without a clear process, conflicting content easily lingers. The knowledge base should therefore set up periodic audits — focused reviews of high-recall documents, expired documents, low-trust sources, and content with frequent user feedback.</p>
+<hr />
+<h3 id="2334-hot-updates-scheduled-updates-and-audited-updates">23.3.4 Hot Updates, Scheduled Updates, and Audited Updates<a class="headerlink" href="#2334-hot-updates-scheduled-updates-and-audited-updates" title="Permanent link">&para;</a></h3>
+<p>Knowledge updates do not all use the same release method. Depending on risk level, time sensitivity, and business impact, updates fall into three modes: hot updates, scheduled updates, and audited updates.</p>
+<p>Hot updates suit low-risk, time-sensitive content — FAQ additions, typo fixes, minor wording updates, low-risk product hints. Their advantage is fast response, suitable for quickly fixing online issues; the risk is that, without automated validation, wrong content can enter production just as quickly. Hot updates must therefore include at least basic checks: document-format validation, parsing-success validation, index-write validation, and small-scale query replay.</p>
+<p>Scheduled updates suit periodically changing knowledge — help center synced daily, product docs updated weekly, monthly operations reports, quarterly earnings, or policy bundles. Their advantage is steady cadence, suitable for batch validation and resource planning. They are typically executed by schedulers and produce an update report afterward: new document count, deletions, parsing failures, indexed updates, and regression results.</p>
+<p>Audited updates suit high-risk content — compliance policies, financial rules, medical guidelines, legal clauses, permission policies, contract templates, and critical business processes. These cannot be auto-deployed; they must go through owner sign-off, expert review, regression evaluation, approval trail, and canary release. For such knowledge, update speed is not the only goal — correctness, traceability, and rollback are more important.</p>
+<p><a class="glightbox" href="../../../images/part7/%E5%9B%BE23_4.png" data-type="image" data-width="auto" data-height="auto" data-desc-position="bottom"><img alt="Figure 23-4: Knowledge Update, Canary Release, and Rollback Governance Flow" src="../../../images/part7/%E5%9B%BE23_4.png" /></a></p>
+<p><em>Figure 23-4: Knowledge Update, Canary Release, and Rollback Governance Flow</em></p>
+<p>In practice, the three update modes usually coexist. The system can allow low-risk content to go through hot updates, medium-risk content through scheduled updates, and high-risk content through audited updates. This requires the knowledge update platform to support risk grading: each update request is automatically or semi-automatically graded based on knowledge type, source, scope of impact, and user population, and routed to the corresponding flow. A wording tweak in a customer-service FAQ can go through hot updates; a batch of product-doc version syncs can go through scheduled updates; anything touching contract liability, financial approvals, or medical advice must go through audited updates. Such tiering balances efficiency and safety — preventing every update from being slowed by heavy approvals, while also preventing high-risk content from sneaking into production unchecked.</p>
+<hr />
+<h3 id="2335-version-freezes-canary-releases-and-rapid-rollback">23.3.5 Version Freezes, Canary Releases, and Rapid Rollback<a class="headerlink" href="#2335-version-freezes-canary-releases-and-rapid-rollback" title="Permanent link">&para;</a></h3>
+<p>The final risk control on knowledge updates is version governance. Without it, three key questions cannot be answered: what version is currently in production? Which update introduced this wrong answer? If an update is bad, can we quickly revert to the previous stable version?</p>
+<p>Concretely, version governance comprises version freezes, canary releases, and rapid rollback. A version freeze fixes the knowledge base, indexes, prompts, model configuration, and evaluation set state at a point in time to form a reproducible release version. For a production RAG system, a "version" should record not just a document folder but the full dependency: source document versions, parser version, chunking strategy, embedding model, index-build parameters, rerank model, prompt template, and permission rules. Only with this can the team reproduce issues for postmortem. Canary release is a key way to reduce knowledge-update risk. Updates should not be released to all users at once. Important updates can roll out first to internal testers, a small fraction of real users, or specific tenants, while monitoring retrieval hit rate, answer accuracy, citation click-through, negative-feedback rate, and human handoff rate. If canary metrics are stable, expand gradually. For multi-tenant systems, canaries can also be staged by department, region, business line, or user role. Rapid rollback restores the system to the last stable version when an update misfires. Rollback capability requires retaining the old index, the old knowledge bundle, and old configurations. If every update overwrites the production index without snapshots, rollback becomes very hard. A more mature approach is "blue/green indexes" or "dual-index release": build the new index, switch traffic only after validation; if something goes wrong, switch back immediately.</p>
+<p>Rollback applies not only to content but also to indexing strategies and generation strategies. An update may not touch any document but adjust chunk granularity or rerank weights, degrading online recall; a prompt update may improve completeness but hurt citation fidelity. All such changes should be brought under version management and rollback. A reliable version governance system should record at least: version number, release time, change content, change source, owner, scope of impact, evaluation results, canary scope, monitored metrics, rollback point, and approval record. These are not only for incident handling but also for long-term review and collaboration.</p>
+<hr />
+<h3 id="2336-section-summary">23.3.6 Section Summary<a class="headerlink" href="#2336-section-summary" title="Permanent link">&para;</a></h3>
+<p>This section discussed knowledge updates, rollback, and version governance in the online feedback loop. For production LLM applications, the knowledge base is not a one-off static asset but a dynamic system requiring continuous updating, validation, and governance. New-knowledge ingestion must go through source verification, content parsing, structuring, index update, and post-deployment validation; old-knowledge expiration and conflict governance rely on metadata for time, version, scope, authority, and permissions. Update methods should be tiered by risk: hot updates for low risk, scheduled updates for medium risk, audited updates for high risk. Meanwhile, the system must establish version freezes, canary releases, and rapid rollback to ensure every change is traceable, verifiable, and reversible. In the online feedback loop, knowledge updates are not isolated. They connect to user failure feedback, error attribution, fix tasks, regression evaluation, and online monitoring. Only when knowledge updates are folded into an engineered governance process can a RAG system remain reliable, controllable, and sustainably evolvable in a changing business environment.</p>
+<p>The next section will further discuss metric dashboards and operational cadence, focusing on how indicators such as online success rate, human handoff rate, correction rate, and knowledge-hit rate feed into weekly operations meetings, focused postmortems, and major-version release cadence, thereby grounding the data loop in the team's daily work.</p>
+<hr />
+<h2 id="234-metric-dashboards-and-operational-cadence">23.4 Metric Dashboards and Operational Cadence<a class="headerlink" href="#234-metric-dashboards-and-operational-cadence" title="Permanent link">&para;</a></h2>
+<h3 id="2341-why-the-online-feedback-loop-needs-dashboards">23.4.1 Why the Online Feedback Loop Needs Dashboards<a class="headerlink" href="#2341-why-the-online-feedback-loop-needs-dashboards" title="Permanent link">&para;</a></h3>
+<p>If the online feedback loop only fixes individual failure samples, it easily falls into "firefighting operations." Users downvote a question, the team fixes it; the business flags a knowledge gap, the team adds a document; an answer cites the wrong source, the team manually tweaks an index entry. In early stages this can be quick and responsive, but as user base, knowledge base, and business scenarios grow, single-point fixes become ineffective. The team must upgrade from "handling problems" to "operating a system," and dashboards are the foundational tool that enables this shift.</p>
+<p>A dashboard does more than show system status; it turns online feedback into a management language that is observable, comparable, attributable, and actionable. For a production RAG or LLM application, "is the system healthy?" cannot be judged only by API availability or latency, nor by user traffic growth. What matters more is: does the system actually answer user questions, is it based on correct knowledge, does it reduce human handling cost, does it stay stable after knowledge updates, and does it apply the right policy in high-risk scenarios.</p>
+<p>The dashboard in the online feedback loop should therefore cover four kinds of metrics: quality metrics, behavior metrics, operations metrics, and risk metrics. Quality metrics focus on whether answers are correct, citations reliable, retrieval on-target; behavior metrics focus on whether users accept, follow up, or hand off; operations metrics focus on issue-handling efficiency, knowledge-update cadence, and fix-loop progress; risk metrics focus on incorrect answers, high-risk wrong answers, permission breaches, and stale-knowledge recall. Only with all four can the team tell whether the system is actually getting better or just looking better on a single metric. For example, if answer accuracy rises while human handoff rate also rises, it may mean the system handles low-risk questions better but cannot handle complex ones; if recall is high but citation click-through is low, answers may look sourced but users do not trust the citation display; if user satisfaction rises but knowledge updates lag, short-term experience may be good but there is latent stale-knowledge risk. The dashboard makes these tensions visible, preventing the team from being misled by a single metric.</p>
+<hr />
+<h3 id="2342-online-success-rate-human-handoff-rate-correction-rate-and-knowledge-hit-rate">23.4.2 Online Success Rate, Human Handoff Rate, Correction Rate, and Knowledge-Hit Rate<a class="headerlink" href="#2342-online-success-rate-human-handoff-rate-correction-rate-and-knowledge-hit-rate" title="Permanent link">&para;</a></h3>
+<p>As shown in Table 23-9, the most commonly used core metrics in the online feedback loop include the online success rate, human handoff rate, correction rate, and knowledge-hit rate. They measure system performance from four angles: user outcomes, human cost, error exposure, and knowledge coverage.</p>
+<p>The online success rate measures whether user problems are effectively solved. It can be estimated jointly from explicit and implicit feedback — clicking "resolved," upvoting, copying the answer, not following up, or ending the session after the answer can all serve as success signals. But success is not a simple binary: different scenarios define it differently. In customer service, success may mean no human handoff; in an enterprise knowledge base, it may mean clicking on the correct citation and proceeding to the next action; in compliance, it may mean not giving a direct conclusion but properly flagging risk and routing to human review.</p>
+<p>The human handoff rate measures the fraction of tasks the system cannot complete on its own. It reflects both capability boundaries and policy design. In high-risk domains, some handoff is necessary; but if even ordinary questions are handed off frequently, the knowledge base, retrieval, or generation strategy is lacking. The handoff rate should be analyzed by question type, not chased to be as low as possible. In legal, medical, or financial-approval scenarios, a low handoff rate combined with a high error rate is a danger signal.</p>
+<p>The correction rate measures how often users or human reviewers find errors — including user-initiated corrections, expert-review findings, and error tags from ticket flows. A rising correction rate does not necessarily mean the system has gotten worse; it may mean the feedback channel is easier to use, users are more willing to report, or the system covers more complex scenarios. It must be analyzed together with issue volume, difficulty, release version, and knowledge-update batches.</p>
+<p>The knowledge-hit rate measures whether user questions can be matched to effective content in the knowledge base. It tracks knowledge-level coverage, not just retrieval recall. If the knowledge base has no answer to a question, no retrieval algorithm can produce a reliable response. A low hit rate usually signals knowledge gaps, un-ingested documents, expired documents, missing metadata, or questions outside the system's boundary.</p>
+<p><em>Table 23-9: Core Metrics of the Online Feedback Loop</em></p>
+<table>
+<thead>
+<tr>
+<th>Metric</th>
+<th>Meaning</th>
+<th>Typical Computation</th>
+<th>Problems It Helps Surface</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Online success rate</td>
+<td>Whether user problems are effectively solved</td>
+<td>Resolved sessions / total sessions, or composite from explicit &amp; implicit feedback</td>
+<td>Unusable answers, poor experience, incomplete task completion</td>
+</tr>
+<tr>
+<td>Human handoff rate</td>
+<td>Whether the system needs human intervention</td>
+<td>Handoff sessions / total sessions</td>
+<td>Capability boundary, overly strict policies, retrieval failures</td>
+</tr>
+<tr>
+<td>Correction rate</td>
+<td>Fraction with user or reviewer-flagged errors</td>
+<td>Correction samples / answered samples</td>
+<td>Factual errors, citation errors, expired knowledge</td>
+</tr>
+<tr>
+<td>Knowledge-hit rate</td>
+<td>Whether the knowledge base has effective evidence for the question</td>
+<td>Questions with valid evidence / total questions</td>
+<td>Knowledge gaps, missing ingestion, insufficient metadata</td>
+</tr>
+<tr>
+<td>Citation accuracy</td>
+<td>Whether answer citations support the conclusion</td>
+<td>Correctly cited answers / answers with citations</td>
+<td>Citation misalignment, weak evidence, context-assembly errors</td>
+</tr>
+<tr>
+<td>Follow-up rate</td>
+<td>Whether users need to keep asking</td>
+<td>Sessions with follow-ups / total sessions</td>
+<td>Incomplete answers, unclear conditions, unclear phrasing</td>
+</tr>
+</tbody>
+</table>
+<p>These metrics complement one another. Online success rate is the outcome metric, human handoff rate is the cost/boundary metric, correction rate is the error-exposure metric, and knowledge-hit rate is the asset metric. Operations cannot stare at any single one; they must observe combinations.</p>
+<p>For instance, if both online success rate and knowledge-hit rate drop, prioritize knowledge gaps or expirations; if hit rate is normal but answer accuracy drops, suspect generation or context assembly; if accuracy is normal but follow-up rate rises, the answer may be unclear or lack action steps; if handoff rate spikes, decide whether business complexity has risen or the policy is misfiring.</p>
+<hr />
+<h3 id="2343-weekly-operations-focused-postmortems-and-major-release-cadence">23.4.3 Weekly Operations, Focused Postmortems, and Major-Release Cadence<a class="headerlink" href="#2343-weekly-operations-focused-postmortems-and-major-release-cadence" title="Permanent link">&para;</a></h3>
+<p>Dashboards only deliver value when they enter a stable operational cadence. Otherwise, they only show data passively without driving improvements. For production LLM applications, we recommend three tiers of cadence: weekly operations meetings, focused postmortems, and major-release reviews.</p>
+<p>Weekly operations meetings focus on day-to-day operating state — core metric trends, online failure samples, knowledge-update progress, and the pending-issue queue. The goal is not to solve every technical detail but to make sure the team knows the system's top issues, what is in progress, and what risks need escalation. The meeting should include product, data engineering, algorithm, platform, and business content owners, so that feedback does not stay siloed.</p>
+<p>Focused postmortems handle clusters of issues. For example, when finance-report Q&amp;A errors spike for a week, or when a product release triggers a flood of feedback about inconsistent feature descriptions, a focused postmortem is needed. It should walk the specific pipeline: how the user asked, what was recalled, how the answer was generated, whether the citation was correct, why the user was dissatisfied, and whether the root cause is knowledge gap, retrieval defect, generation defect, or policy defect. The conclusion must translate into concrete fix actions, not vague "to-be-optimized."</p>
+<p>Major-release reviews cover wide-scope knowledge updates, indexing-strategy changes, model upgrades, or prompt-system overhauls. They cannot rely on dev self-testing alone; they require regression evaluation, canary release, online monitoring, and a rollback plan. Especially for updates touching high-frequency knowledge, critical processes, or high-risk answering policies, the scope of impact and acceptance criteria must be explicit before release.</p>
+<p><em>Table 23-10: Operational Cadence of the Online Feedback Loop</em></p>
+<table>
+<thead>
+<tr>
+<th>Mechanism</th>
+<th>Frequency</th>
+<th>Main Inputs</th>
+<th>Main Outputs</th>
+<th>Participants</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Weekly operations</td>
+<td>Weekly</td>
+<td>Dashboards, top failure categories, knowledge-update queue</td>
+<td>Prioritization, ownership assignment, risk escalation</td>
+<td>Product, data engineering, algorithm, business content, platform</td>
+</tr>
+<tr>
+<td>Focused postmortem</td>
+<td>On trigger</td>
+<td>A class of high-frequency or high-risk failure samples</td>
+<td>Root-cause analysis, fix plan, regression samples</td>
+<td>Owners, business experts, algorithm and platform</td>
+</tr>
+<tr>
+<td>Major-release review</td>
+<td>Before release</td>
+<td>Change description, regression results, canary results, rollback plan</td>
+<td>Release decision, canary scope, rollback point</td>
+<td>Project lead, platform, business, compliance, quality lead</td>
+</tr>
+<tr>
+<td>Monthly quality review</td>
+<td>Monthly</td>
+<td>Trend metrics, cost metrics, feedback summary</td>
+<td>Periodic quality report, resource planning</td>
+<td>PM, product, data operations, technical lead</td>
+</tr>
+</tbody>
+</table>
+<p>The crucial element of cadence is closed-loop record-keeping. Each meeting should produce explicit issues, owners, due dates, acceptance metrics, and follow-up channels. For example, "improve retrieval" is not a valid task; "for reimbursement-policy questions, add 30 synonym phrasings, raising Recall@5 on the failure subset from 62% to above 85%" is. Only when tasks are metricized, sample-anchored, and versioned can meetings push real improvement.</p>
+<hr />
+<h3 id="2344-ownership-boundaries-and-collaboration-in-the-feedback-loop">23.4.4 Ownership Boundaries and Collaboration in the Feedback Loop<a class="headerlink" href="#2344-ownership-boundaries-and-collaboration-in-the-feedback-loop" title="Permanent link">&para;</a></h3>
+<p>The online feedback loop usually involves multiple teams, so ownership boundaries must be clear. A single user downvote may touch knowledge-base content, retrieval strategy, model generation, product UX, and permission control. Without clear division of labor, the issue bounces among teams and ultimately no one owns it.</p>
+<p>A workable approach is to bind feedback to root-cause categories and corresponding teams. Knowledge gaps to content/business owners; retrieval defects to data engineering and retrieval teams; generation defects to the model-application team; policy defects jointly to product, business, and compliance; platform stability to the infrastructure team; product-experience issues to product and frontend. Issues that cannot be classified in one shot go into a joint-postmortem queue led by data operations.</p>
+<p>The loop also needs a status-flow mechanism. From entry to closure, a feedback sample typically traverses: pending routing, pending confirmation, pending fix, pending regression, pending deploy, closed. Each status needs explicit entry and exit conditions. "Pending fix" requires a root-cause tag and fix plan; "pending regression" requires bound regression samples; "closed" requires verification or a metric change as evidence.</p>
+<p>Collaboration also needs prioritization rules. Not every issue can be processed at once; teams must order them by impact, risk, frequency, and fix cost. High-risk issues take priority even when low-frequency; high-frequency low-risk issues fit batch optimization; low-frequency low-risk issues can accumulate in a long-term pool; high-frequency high-risk issues should trigger incident-level response.</p>
+<p>Finally, the feedback loop needs knowledge precipitation. Every postmortem should enter a case library, with background, failure symptom, root cause, fix action, deployment outcome, and lessons learned. Over time, these cases become the team's operations knowledge base — helping new members understand common system issues and informing evaluation-set design and pre-deployment checklists.</p>
+<hr />
+<h3 id="2345-section-summary">23.4.5 Section Summary<a class="headerlink" href="#2345-section-summary" title="Permanent link">&para;</a></h3>
+<p>This section discussed dashboards and operational cadence in the online feedback loop. For production-grade LLM applications, dashboards are not just data displays — they are the infrastructure that turns online feedback into operational decisions. Online success rate, human handoff rate, correction rate, knowledge-hit rate, citation accuracy, and follow-up rate together form a quality-observation framework that helps the team spot knowledge gaps, retrieval defects, generation defects, policy defects, and UX issues.</p>
+<p>Metrics must enter a stable operational cadence to drive continuous improvement. Weekly operations meetings handle daily issues and prioritization, focused postmortems address high-frequency or high-risk clusters, and major-release reviews control risk in knowledge, index, model, and policy changes. Meanwhile, the feedback loop must clarify ownership, establish issue status flow and prioritization rules, and prevent online feedback from circulating among teams without ever closing.</p>
+<p>The maturity of the online feedback loop ultimately shows in whether the team can continuously convert real user problems into data assets, fix tasks, evaluation samples, and knowledge updates. The next section will, through an online knowledge-update SOP and incident review, discuss how to ground these mechanisms in concrete production processes.</p>
+<hr />
+<h2 id="235-case-reviews-and-sops">23.5 Case Reviews and SOPs<a class="headerlink" href="#235-case-reviews-and-sops" title="Permanent link">&para;</a></h2>
+<h3 id="2351-why-an-online-knowledge-update-sop-is-necessary">23.5.1 Why an Online Knowledge-Update SOP Is Necessary<a class="headerlink" href="#2351-why-an-online-knowledge-update-sop-is-necessary" title="Permanent link">&para;</a></h3>
+<p>The previous sections discussed the online feedback loop, event collection, feedback routing, knowledge updates, version governance, and metrics operations. This section grounds these mechanisms in actual production processes, discussing how to use SOPs (Standard Operating Procedures) to manage online knowledge updates and incident reviews.</p>
+<p>For a production RAG system, a knowledge update is not simply uploading a document or having an engineer manually rebuild an index. A seemingly small knowledge change can affect retrieval, citation, and risk judgment for many user questions. Without a standard procedure, teams easily run into the following: new knowledge is deployed without validation, letting wrong content into production; old knowledge is not retired in time, causing old/new conflicts; after an index update, no regression test is run, so previously correct questions begin to fail; when issues arise, the source of change is not recorded, making it impossible to identify which update introduced the regression. The core goal of the online knowledge-update SOP is to turn "knowledge change" into engineering actions that are approvable, executable, verifiable, and reversible. It must make explicit who is responsible at each stage, what the inputs and outputs are, what the passing criteria are, and how exceptions are handled.</p>
+<p>A complete online knowledge-update SOP usually contains at least seven stages: change proposal, source verification, parsing and structuring, conflict detection, index update, regression evaluation, and canary release with monitoring. Low-risk knowledge can use a compressed flow; high-risk knowledge must add human approval, compliance review, and rollback planning.</p>
+<p><em>Table 23-11: Online Knowledge-Update SOP</em></p>
+<table>
+<thead>
+<tr>
+<th>Stage</th>
+<th>Input</th>
+<th>Key Actions</th>
+<th>Output</th>
+<th>Passing Criteria</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Change proposal</td>
+<td>New document, change notes, feedback samples</td>
+<td>Fill in source, scope of impact, owner</td>
+<td>Knowledge change ticket</td>
+<td>Clear rationale and explicit owner</td>
+</tr>
+<tr>
+<td>Source verification</td>
+<td>Document source, permissions, approval record</td>
+<td>Verify trustworthiness, legality, scope</td>
+<td>Source verification</td>
+<td>Trusted source, compliant permissions</td>
+</tr>
+<tr>
+<td>Parsing &amp; structuring</td>
+<td>Raw document, parser config</td>
+<td>Extract sections, tables, charts, metadata</td>
+<td>Structured knowledge units</td>
+<td>Complete content, complete metadata</td>
+</tr>
+<tr>
+<td>Conflict detection</td>
+<td>New and old knowledge units</td>
+<td>Check version, time, and scope conflicts</td>
+<td>Conflict report</td>
+<td>High-risk conflicts resolved</td>
+</tr>
+<tr>
+<td>Index update</td>
+<td>Knowledge units, index config</td>
+<td>Update vector, keyword, structured indexes</td>
+<td>New index version</td>
+<td>Index built successfully, traceable</td>
+</tr>
+<tr>
+<td>Regression evaluation</td>
+<td>Golden set, failure-sample set, focused set</td>
+<td>Test recall, citations, answer correctness</td>
+<td>Evaluation report</td>
+<td>Metrics meet threshold, no severe regressions</td>
+</tr>
+<tr>
+<td>Canary release</td>
+<td>New index version, canary policy</td>
+<td>Small-traffic deploy and feedback monitoring</td>
+<td>Canary result</td>
+<td>No noticeable quality degradation</td>
+</tr>
+<tr>
+<td>Full release/rollback</td>
+<td>Canary results, monitoring metrics</td>
+<td>Expand traffic or revert to previous version</td>
+<td>Release record</td>
+<td>Successful release or safe rollback</td>
+</tr>
+</tbody>
+</table>
+<p>In practice, an SOP should not be overly elaborate, or the team will bypass it; nor should it be too coarse, or it will fail to control risk. A workable approach is to execute different flows by risk tier. Low-risk FAQ updates can automate parsing, indexing, and small-scale regression; updates touching finance, contracts, healthcare, or compliance must go through expert review and canary validation.</p>
+<hr />
+<h3 id="2352-case-stale-knowledge-causes-a-wrong-answer">23.5.2 Case: Stale Knowledge Causes a Wrong Answer<a class="headerlink" href="#2352-case-stale-knowledge-causes-a-wrong-answer" title="Permanent link">&para;</a></h3>
+<p>We illustrate with an enterprise internal-policy Q&amp;A system, showing how, without a knowledge-update loop, online issues happen and how to fix them via SOP.</p>
+<p>A company launched an internal knowledge assistant to answer employee questions on reimbursement, leave, procurement, and approval processes. Initially it performed well on most standard questions. Two months after launch, the finance team released a new travel-reimbursement policy, adjusting lodging standards, transportation allowances, and approval authority. However, the old policy remained in the knowledge base, and although the new policy was uploaded to the document system, structuring and index updates were never completed. A few days later, employees began asking: "What is the maximum hotel reimbursement for tier-one cities on business trips?" The system recalled the lodging standard from the old policy and produced an answer with citations. Because the answer included source links, users took it as trustworthy and submitted reimbursement claims under the old standards. The finance review caught the discrepancy and escalated the issue to system operations. The postmortem found this was not a random model hallucination but a textbook case of stale knowledge. The retrieved document did exist; it simply was no longer the current version. The new policy had been released but not entered the production index. The old policy lacked expiration and version-status fields, so retrieval could not down-weight or filter it.</p>
+<p>The case revealed three data-engineering problems: first, the knowledge base lacked effective-time and expiration-time management; second, the new-knowledge release did not trigger an index update; third, the system did not run regression evaluation on high-frequency policy questions. Fix actions should address all three rather than just edit one answer.</p>
+<p><em>Table 23-12: Error Attribution and Fix Actions for the Stale-Knowledge Case</em></p>
+<table>
+<thead>
+<tr>
+<th>Symptom</th>
+<th>Root-Cause Category</th>
+<th>Specific Cause</th>
+<th>Fix Action</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>System cites old policy</td>
+<td>Knowledge version governance</td>
+<td>Old document has no expiration status</td>
+<td>Add version, effective time, and expiration time to policy documents</td>
+</tr>
+<tr>
+<td>New policy not recalled</td>
+<td>Index-update defect</td>
+<td>New document not in the production index</td>
+<td>Trigger new-policy parsing, structuring, and index rebuild</td>
+</tr>
+<tr>
+<td>Users cannot judge version</td>
+<td>Citation-display defect</td>
+<td>Answer omits policy version and effective date</td>
+<td>Show version number and effective date in the citation</td>
+</tr>
+<tr>
+<td>Same issue not detected earlier</td>
+<td>Regression-evaluation defect</td>
+<td>Lack of policy-specific regression set</td>
+<td>Build a travel-policy regression sample set</td>
+</tr>
+<tr>
+<td>No verification after fix</td>
+<td>Operations-loop defect</td>
+<td>No canary monitoring or acceptance metrics</td>
+<td>Canary release with monitoring on negative-feedback rate for reimbursement Q&amp;A</td>
+</tr>
+</tbody>
+</table>
+<p>The case shows that online incidents are rarely single-point failures; they reflect inadequate knowledge-lifecycle management. The right fix is not to delete one wrong answer but to systematize "policy version governance" — including metadata completion, index updates, citation display, evaluation-set expansion, and dashboard refresh.</p>
+<hr />
+<h3 id="2353-automated-backflow-of-high-value-feedback-samples">23.5.3 Automated Backflow of High-Value Feedback Samples<a class="headerlink" href="#2353-automated-backflow-of-high-value-feedback-samples" title="Permanent link">&para;</a></h3>
+<p>Not every piece of user feedback in the online feedback loop deserves human postmortem. A production system may generate huge volumes of logs, ratings, clicks, and follow-up behaviors daily — manual processing would be prohibitively expensive. The system therefore needs to identify high-value feedback automatically and prioritize routing to review and backfill.</p>
+<p>High-value feedback samples usually share traits: they involve high-frequency questions, come from high-risk scenarios, carry strong negative feedback, contain user correction text, trigger human handoff, relate to recent knowledge updates, or cluster as similar failures within a short window. The system can compute a priority score for each feedback sample to decide whether it enters human review, the knowledge-update queue, or the evaluation set.</p>
+<p>Below is a simplified example of a priority-scoring rule for feedback samples. It is not full production code; it illustrates how to combine explicit feedback, implicit behavior, risk level, and knowledge-update status into an interpretable filter rule.</p>
+<p>```python id="5uhrnq"
+from dataclasses import dataclass</p>
+<p>@dataclass
+class FeedbackEvent:
+    query: str
+    explicit_negative: bool = False      # Downvote, error report, or explicit "not helpful"
+    has_correction: bool = False         # Contains user-provided correction text
+    followup_count: int = 0              # Number of follow-up turns
+    reformulated: bool = False           # User rephrased and resubmitted the question
+    human_handoff: bool = False          # Whether the session was handed off to a human
+    risk_level: str = "low"              # low / medium / high
+    related_to_recent_update: bool = False
+    frequency_7d: int = 1                # Occurrences of similar questions in the last 7 days</p>
+<p>def score_feedback(event: FeedbackEvent) -&gt; int:
+    score = 0</p>
+<div class="highlight"><pre><span></span><code>if event.explicit_negative:
+    score += 3
+if event.has_correction:
+    score += 4
+if event.followup_count &gt;= 2:
+    score += 2
+if event.reformulated:
+    score += 2
+if event.human_handoff:
+    score += 4
+if event.risk_level == &quot;medium&quot;:
+    score += 2
+elif event.risk_level == &quot;high&quot;:
+    score += 5
+if event.related_to_recent_update:
+    score += 3
+if event.frequency_7d &gt;= 10:
+    score += 3
+elif event.frequency_7d &gt;= 3:
+    score += 1
+
+return score
+</code></pre></div>
+<p>def route_feedback(event: FeedbackEvent) -&gt; str:
+    score = score_feedback(event)</p>
+<div class="highlight"><pre><span></span><code>if event.risk_level == &quot;high&quot; and (event.explicit_negative or event.human_handoff):
+    return &quot;expert_review_queue&quot;
+
+if score &gt;= 10:
+    return &quot;priority_failure_queue&quot;
+elif score &gt;= 6:
+    return &quot;sampling_review_queue&quot;
+else:
+    return &quot;monitoring_pool&quot;
+</code></pre></div>
+<p>event = FeedbackEvent(
+    query="Under the new travel policy, can tier-one-city hotel costs still be reimbursed under the old standard?",
+    explicit_negative=True,
+    has_correction=True,
+    followup_count=2,
+    human_handoff=True,
+    risk_level="high",
+    related_to_recent_update=True,
+    frequency_7d=12,
+)</p>
+<p>print(score_feedback(event))
+print(route_feedback(event))</p>
+<p>```</p>
+<p>This snippet embodies an important principle: a feedback sample's value is not determined by downvote alone; it should be judged by multiple signals together. A low-risk downvoted question may not need immediate handling; a high-risk question, even if it occurred only once, may need expert review; a question that recurs at high frequency within a short window likely indicates a knowledge gap or systemic retrieval failure.</p>
+<p>In production systems, such rules are usually combined with model classifiers. The system can first use rules to surface obvious high-value samples, then use a classification model to attribute root cause — knowledge gap, retrieval defect, generation defect, policy defect, or UX issue. Rules give interpretability; models give extensibility; the combination fits complex online environments better.</p>
+<hr />
+<h3 id="2354-an-example-online-knowledge-update-sop">23.5.4 An Example Online Knowledge-Update SOP<a class="headerlink" href="#2354-an-example-online-knowledge-update-sop" title="Permanent link">&para;</a></h3>
+<p>Combining the case and the automated backflow above yields a fairly complete online knowledge-update SOP. Here is a simplified version suitable for an enterprise RAG system.</p>
+<p>Step 1: From user feedback, tickets, and logs, the system surfaces failure samples and routes them to the corresponding queues by priority. High-risk issues go straight to expert review; ordinary issues enter sampling review or periodic processing.</p>
+<p>Step 2: Operators or the system perform initial root-cause attribution — knowledge gap, knowledge expiration, retrieval defect, generation defect, or policy defect. If undetermined, the full event chain is retained and routed to joint postmortem.</p>
+<p>Step 3: For knowledge-update-class issues, create a knowledge change ticket. The ticket should include source, user query, wrong answer, wrong citation, correct knowledge source, owner, risk level, and target deploy time.</p>
+<p>Step 4: The knowledge owner adds or revises documents and verifies sources. For high-risk content, business experts or compliance owners must confirm. After confirmation, the document enters parsing and structuring.</p>
+<p>Step 5: The system performs conflict detection and index update. If old/new conflicts are found, confirm the authoritative source and applicable scope first rather than letting both versions enter the production index simultaneously.</p>
+<p>Step 6: Run regression evaluation. The evaluation set should include at least the original failure sample, similar-question samples, golden-set samples, and high-risk boundary samples. Only when key metrics meet thresholds does the change proceed to canary release.</p>
+<p>Step 7: Canary deploy and monitor. If negative-feedback rate, human handoff rate, or citation-error rate spikes, roll back immediately; if canary is stable, expand traffic and finally roll out fully.</p>
+<p>Step 8: Close the feedback ticket and precipitate the postmortem record. The record should state root cause, fix actions, affected version, deployment outcome, and preventative measures. These records become important inputs to future operations meetings and the case library.</p>
+<p>The value of this SOP is that it turns one online failure into a complete data loop. A failure is no longer just a UX issue; it becomes input for knowledge updates, evaluation enhancement, and system governance. As this flow runs continuously, the system not only fixes individual issues but steadily improves robustness to similar issues.</p>
+<hr />
+<h3 id="2355-section-summary">23.5.5 Section Summary<a class="headerlink" href="#2355-section-summary" title="Permanent link">&para;</a></h3>
+<p>This section used the stale-knowledge case to discuss how the online feedback loop is grounded in a concrete SOP. In production RAG systems, many errors are not random model hallucinations but the combined failure of knowledge versioning, index updating, citation display, and regression evaluation. Incident review must therefore not stop at "the answer was wrong" but localize the specific stage in the knowledge lifecycle.</p>
+<p>To improve feedback processing efficiency, the system must automatically identify high-value feedback and rank by signals such as explicit negative feedback, user corrections, follow-up behavior, human handoff, risk level, recent updates, and frequency. Combining rules and models, large volumes of online feedback can be turned into manageable review queues, fix tasks, and evaluation samples.</p>
+<p>The core of the online knowledge-update SOP is to organize failure-sample collection, root-cause analysis, knowledge change, structuring, index update, regression evaluation, canary release, and postmortem precipitation into a stable process. Only when these actions form an institutionalized closed loop can an LLM application move from "launched and usable" to "reliable over the long term."</p>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  Back to top
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+    
+      
+      <nav class="md-footer__inner md-grid" aria-label="Footer" >
+        
+          
+          <a href="../ch22_multimodal_rag_visual_retrieval/" class="md-footer__link md-footer__link--prev" aria-label="Previous: Chapter 22: Multimodal RAG and Visual Retrieval">
+            <div class="md-footer__button md-icon">
+              
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+            </div>
+            <div class="md-footer__title">
+              <span class="md-footer__direction">
+                Previous
+              </span>
+              <div class="md-ellipsis">
+                Chapter 22: Multimodal RAG and Visual Retrieval
+              </div>
+            </div>
+          </a>
+        
+        
+          
+          <a href="../../part8/ch24_dataops_flywheel_team/" class="md-footer__link md-footer__link--next" aria-label="Next: Chapter 24: DataOps Flywheel and Team Organization">
+            <div class="md-footer__title">
+              <span class="md-footer__direction">
+                Next
+              </span>
+              <div class="md-ellipsis">
+                Chapter 24: DataOps Flywheel and Team Organization
+              </div>
+            </div>
+            <div class="md-footer__button md-icon">
+              
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M4 11v2h12l-5.5 5.5 1.42 1.42L19.84 12l-7.92-7.92L10.5 5.5 16 11z"/></svg>
+            </div>
+          </a>
+        
+      </nav>
+    
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    <script id="__config" type="application/json">{"base": "../../..", "features": ["navigation.sections", "navigation.expand", "navigation.indexes", "navigation.top", "navigation.footer", "toc.follow", "search.suggest", "content.code.copy"], "search": "../../../assets/javascripts/workers/search.6ce7567c.min.js", "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}}</script>
+    
+    
+      <script src="../../../assets/javascripts/bundle.525ec568.min.js"></script>
+      
+        <script src="../../../javascripts/mathjax.js"></script>
+      
+        <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+      
+    
+  <script id="init-glightbox">const lightbox = GLightbox({"touchNavigation": true, "loop": false, "zoomable": true, "draggable": true, "openEffect": "zoom", "closeEffect": "zoom", "slideEffect": "slide"});
+document$.subscribe(() => { lightbox.reload() });
+</script></body>
+</html>
